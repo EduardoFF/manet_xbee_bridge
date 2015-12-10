@@ -1,0 +1,22 @@
+
+set(gpsdriver_HEADERS
+  gps_driver.h
+)
+
+set(gpsdriver_IMPLEMENTATIONS
+  gps_driver.cc
+)
+
+
+add_library(gps_driver ${gpsdriver_IMPLEMENTATIONS})
+
+target_link_libraries(gps_driver)
+
+install(TARGETS gps_driver
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  )
+
+install(FILES gps_driver.h DESTINATION include)
+
