@@ -31,8 +31,7 @@ endNodeInfoTimerCB(void *arg)
   if( g_abort )
     return;
   /// lock the mutex first
-  pthread_mutex_lock(&g_sendMutex);
-  
+  pthread_mutex_lock(&g_sendMutex);  
   using namespace xbee_app_data;
   
   //// compose node info packet
@@ -133,7 +132,7 @@ int main(int argc, char * argv[])
   
 
   g_xbee = new XbeeInterface(xbeePar);
-  g_gpsDriver = new GPSDriver("udpm://239.255.76.67:7667?ttl=1", "GPS", true);
+  g_gpsDriver = new GPSDriver("udpm://239.255.76.67:7667?ttl=1", "POSE", true);
   g_endNodeInfoTimer = new Timer(TIMER_SECONDS, endNodeInfoTimerCB, NULL);
   g_endNodeInfoTimer->startPeriodic(1);
 
