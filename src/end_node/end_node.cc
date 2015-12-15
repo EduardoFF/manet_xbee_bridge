@@ -120,7 +120,7 @@ int main(int argc, char * argv[])
   xbeePar.brate = baudrate;
   xbeePar.mode  = "xbee1";
   xbeePar.Device = xbeeDev;
-  xbeePar.writeParams = true;
+  xbeePar.writeParams = false;
 
   /// create mutexes
   if (pthread_mutex_init(&g_sendMutex, NULL) != 0)

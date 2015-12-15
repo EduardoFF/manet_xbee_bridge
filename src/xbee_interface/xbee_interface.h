@@ -66,6 +66,7 @@ struct XbeeInterfaceParam
     PanId = 13106;
     NodeIdentifier = "Default";
     SourceAddress = 0;
+    PowerLevel = 1;
 
     brate = 57600;
     mode  = "xbee1";

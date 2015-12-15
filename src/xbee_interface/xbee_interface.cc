@@ -130,6 +130,7 @@ XbeeInterface::setup()
 {
   ///
   setParameter(mATCon, "MY", (uint16_t) mParam.SourceAddress, 2);
+  
   setParameter(mATCon, "ID", mParam.PanId, 2);
   setParameter(mATCon, "PL", mParam.PowerLevel, 1);
   if( mParam.writeParams )
@@ -345,10 +346,19 @@ XbeeInterface::init()
 
     printf("Requesting parameter MY\n");
     (*mATCon) << "MY";//    or like this 
-			    sleep(1);
-    #endif
+    sleep(1);
+#endif
+    printf("Created AT connection\n");
+    fflush(stdout);
+
     setup();
+    printf("Done setup\n");
+    fflush(stdout);
+
     mConn[0xffff] = createConnection(0xffff);
+    printf("Created connection to 0xffff\n");
+    fflush(stdout);
+
 
   } catch (xbee_err ret) {
     log_err("xbee exception %d", ret);

@@ -101,6 +101,8 @@ int main(int argc, char * argv[])
     }
   
 
+  printf("Creating xbeeInterface\n");
+  fflush(stdout);
   g_xbee = new XbeeInterface(xbeePar);
   g_xbee->registerReceive(&receiveData);
 
