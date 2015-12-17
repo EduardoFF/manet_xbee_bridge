@@ -30,29 +30,29 @@
 #include <string>
 #include <sstream>
 #include <fstream>
+#include <vector>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
 #include <lcm/lcm-cpp.hpp>
 #include <pthread.h>
-#include "pose_t.hpp"
+#include "route2_tree_t.hpp"
+#include "tree.h"
 using namespace std;
-
 
 struct TimestampedROUTINGData
 {
   uint64_t timestamp;
-  float lat;
-  float lon;
-  float alt;
-TimestampedROUTINGData(uint64_t t, float _lat, float _lon, float _alt):
+  int32_t n;
+  route2_table_t rtable;
+  
+TimestampedROUTINGData(uint64_t t, int32_t _n, route2_table_t _rtab):
   timestamp(t),
-    lat(_lat),
-    lon(_lon),
-    alt(_alt)
+    n(_n),
+    rtable(_rtab)
   {}
 TimestampedROUTINGData():
-  timestamp(0),lon(0),lat(0),alt(0)
+  timestamp(0),n(0),rtable()
   {}
   
 };
@@ -61,6 +61,7 @@ TimestampedROUTINGData():
 class ROUTINGDriver 
 {
   public:
+    // Constructers 
     ROUTINGDriver();
     ROUTINGDriver(const char * url, const string &channel, bool autorun);
 
@@ -71,16 +72,14 @@ class ROUTINGDriver
 		       const route2_tree_t* msg);
 
     TimestampedROUTINGData data();
+
   private:
     static uint64_t getTime();
     static std::string getTimeStr();
-    TimestampedROUTINGData m_latestData;
-
-
+    TimestampedROUTINGData m_latestRoutingData;
+    
     const char * m_lcmURL;
-
     string m_lcmChannel;
-
     lcm::LCM m_lcm;
 
     /**
@@ -94,12 +93,12 @@ class ROUTINGDriver
     inline bool isLCMReady();
     inline void subscribeToChannel(const string & channel) ;
 
-
     static void * internalThreadEntryFunc(void * ptr) 
     {
-      (( GPSDriver *) ptr)->internalThreadEntry();
+      (( ROUTINGDriver *) ptr)->internalThreadEntry();
       return NULL;
     }
+
     void internalThreadEntry();
 };
 

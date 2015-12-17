@@ -11,7 +11,7 @@
 #include <stdio.h>
 
 #include <lcm/lcm-cpp.hpp>
-#include "exlcm/route2_tree_t.hpp"
+#include "route2_tree_t.hpp"
 
 class Handler 
 {
@@ -20,11 +20,11 @@ class Handler
 
         void handleMessage(const lcm::ReceiveBuffer* rbuf,
                 const std::string& chan, 
-                const exlcm::route2_tree_t* msg)
+                const route2_tree_t* msg)
         {
-            printf("Received message on channel \"%s\":\n", chan.c_str());
+            printf("  Received message on channel \"%s\":\n", chan.c_str());
             printf("  timestamp   = %lld\n", (long long)msg->timestamp);
-            printf("  rtable:");
+            printf("  rtable: \n");
             for(int i = 0; i < msg->n; i++)
 	    {		
 		printf("  node   = %s\n",msg->rtable[i].node.c_str());
@@ -47,7 +47,7 @@ int main(int argc, char** argv)
         return 1;
 
     Handler handlerObject;
-    lcm.subscribe("EXAMPLE", &Handler::handleMessage, &handlerObject);
+    lcm.subscribe("ROUTE", &Handler::handleMessage, &handlerObject);
 
     while(0 == lcm.handle());
 

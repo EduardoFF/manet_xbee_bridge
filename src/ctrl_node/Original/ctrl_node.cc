@@ -2,9 +2,6 @@
 #include <stdlib.h>
 #include <GetPot.hpp>
 #include "gps_driver.h"
-////////////////////////////
-#include "routing_driver.h"
-////////////////////////////
 #include "xbee_interface.h"
 #include "xbee_app_data.h"
 #include "timer.h"
@@ -19,86 +16,18 @@ void print_help(const string Application)
 }
 
 XbeeInterface *g_xbee;
-//////////////////////////////
-GPSDriver *g_routingDriver;
-Timer *g_endNodeInfoTimer;
-/////////////////////////////////
 char g_outBuf[130];
 bool g_abort;
 
 /// mutex for sending one packet at a time
 pthread_mutex_t g_sendMutex;
 
-/////////////////////////////////////////////////////
-///// here we send the node info packet /////
-void
-endNodeInfoTimerCB(void *arg)
-{
-  if( g_abort )
-    return;
-  /// lock the mutex first
-  pthread_mutex_lock(&g_sendMutex);  
-  using namespace xbee_app_data;
-  
-  //// compose node info packet
-  Header hdr;	
-
-  /// make header
-  hdr.type = XBEEDATA_ENDNODEINFO;
-  memcpy(g_outBuf, &hdr, sizeof(Header));
-
-  // make payload
-  EndNodeInfo eInfo;
-  TimestampedROUTINGData routingData = g_routingDriver->data();
-  eInfo.timestamp  = routingData.timestamp;
-  eInfo.n = routingData.n;
-  eInfo.rtable  = routingData.rtable;
-  //  eInfo.dataRate  = g_dataRateMon->data();
-  
-  memcpy(g_outBuf+sizeof(Header), &eInfo, sizeof(EndNodeInfo));
-  size_t buflen = sizeof(Header) + sizeof(EndNodeInfo);
-  XbeeInterface::TxInfo txInfo;
-  txInfo.reqAck = true;
-  txInfo.readCCA = false;
-  int retval = g_xbee->send(1, txInfo, g_outBuf, buflen);
-  if( retval == XbeeInterface::NO_ACK )
-    {
-      printf("send failed NOACK\n");
-    }
-  else if( retval == XbeeInterface::TX_MAC_BUSY )
-    {
-      printf("send failed MACBUSY\n");
-    }
-  else
-    {
-      printf("send OK\n");
-    }
-
-  pthread_mutex_unlock(&g_sendMutex); 
-  
-}
-/////////////////////////////////////////////////////////////
-
 void
 signalHandler( int signum )
 {
   g_abort = true;
   printf("ending app...\n");
-//////////////////////////
-  /// stop timers
-  if( g_endNodeInfoTimer )
-    {
-      g_endNodeInfoTimer->stop();
-      while( g_endNodeInfoTimer->isRunning() )
-	{
-	  sleep(1);
-	  g_endNodeInfoTimer->stop();
-	}
-    }
-  delete g_endNodeInfoTimer;
   
-  delete g_routingDriver;
-//////////////////////////
   delete g_xbee;
   printf("done.\n");
   exit(signum);
@@ -176,12 +105,6 @@ int main(int argc, char * argv[])
   fflush(stdout);
   g_xbee = new XbeeInterface(xbeePar);
   g_xbee->registerReceive(&receiveData);
-
-  /////////////
- g_routingDriver = new ROUTINGDriver("udpm://239.255.76.67:7667?ttl=1", "ROUTE", true);
-  g_endNodeInfoTimer = new Timer(TIMER_SECONDS, endNodeInfoTimerCB, NULL);
-  g_endNodeInfoTimer->startPeriodic(1);
-  /////////////
 
   for(;;)
     {
