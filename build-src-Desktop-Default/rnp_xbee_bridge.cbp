@@ -1,0 +1,474 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+   <FileVersion major="1" minor="6" />
+   <Project>
+      <Option title="rnp_xbee_bridge" />
+      <Option makefile_is_custom="1" />
+      <Option compiler="gcc" />
+      <Option virtualFolders="CMake Files\;CMake Files\routing_driver\;CMake Files\gps_driver\;CMake Files\xbee_interface\;CMake Files\xbee_app_data\;CMake Files\timer\;CMake Files\end_node\;CMake Files\ctrl_node\;" />
+      <Build>
+      <Target title="all">
+         <Option working_dir="/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default" />
+         <Option type="4" />
+         <MakeCommands>
+            <Build command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/Makefile&quot;  VERBOSE=1 all" />
+            <CompileFile command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/Makefile&quot;  VERBOSE=1 &quot;$file&quot;" />
+            <Clean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/Makefile&quot;  VERBOSE=1 clean" />
+            <DistClean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/Makefile&quot;  VERBOSE=1 clean" />
+         </MakeCommands>
+      </Target>
+      <Target title="install">
+         <Option working_dir="/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default" />
+         <Option type="4" />
+         <MakeCommands>
+            <Build command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/Makefile&quot;  VERBOSE=1 install" />
+            <CompileFile command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/Makefile&quot;  VERBOSE=1 &quot;$file&quot;" />
+            <Clean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/Makefile&quot;  VERBOSE=1 clean" />
+            <DistClean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/Makefile&quot;  VERBOSE=1 clean" />
+         </MakeCommands>
+      </Target>
+      <Target title="install/local">
+         <Option working_dir="/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default" />
+         <Option type="4" />
+         <MakeCommands>
+            <Build command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/Makefile&quot;  VERBOSE=1 install/local" />
+            <CompileFile command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/Makefile&quot;  VERBOSE=1 &quot;$file&quot;" />
+            <Clean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/Makefile&quot;  VERBOSE=1 clean" />
+            <DistClean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/Makefile&quot;  VERBOSE=1 clean" />
+         </MakeCommands>
+      </Target>
+      <Target title="install/strip">
+         <Option working_dir="/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default" />
+         <Option type="4" />
+         <MakeCommands>
+            <Build command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/Makefile&quot;  VERBOSE=1 install/strip" />
+            <CompileFile command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/Makefile&quot;  VERBOSE=1 &quot;$file&quot;" />
+            <Clean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/Makefile&quot;  VERBOSE=1 clean" />
+            <DistClean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/Makefile&quot;  VERBOSE=1 clean" />
+         </MakeCommands>
+      </Target>
+      <Target title="list_install_components">
+         <Option working_dir="/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default" />
+         <Option type="4" />
+         <MakeCommands>
+            <Build command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/Makefile&quot;  VERBOSE=1 list_install_components" />
+            <CompileFile command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/Makefile&quot;  VERBOSE=1 &quot;$file&quot;" />
+            <Clean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/Makefile&quot;  VERBOSE=1 clean" />
+            <DistClean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/Makefile&quot;  VERBOSE=1 clean" />
+         </MakeCommands>
+      </Target>
+      <Target title="rebuild_cache">
+         <Option working_dir="/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default" />
+         <Option type="4" />
+         <MakeCommands>
+            <Build command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/Makefile&quot;  VERBOSE=1 rebuild_cache" />
+            <CompileFile command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/Makefile&quot;  VERBOSE=1 &quot;$file&quot;" />
+            <Clean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/Makefile&quot;  VERBOSE=1 clean" />
+            <DistClean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/Makefile&quot;  VERBOSE=1 clean" />
+         </MakeCommands>
+      </Target>
+      <Target title="routing_driver">
+         <Option output="/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/routing_driver/librouting_driver.a" prefix_auto="0" extension_auto="0" />
+         <Option working_dir="/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/routing_driver" />
+         <Option object_output="./" />
+         <Option type="2" />
+         <Option compiler="gcc" />
+         <Compiler>
+            <Add directory="/home/idsia/Repositories/rnp_xbee_bridge/src" />
+            <Add directory="/usr/include" />
+            <Add directory="/usr/include/c++/4.6" />
+            <Add directory="/usr/include/c++/4.6/backward" />
+            <Add directory="/usr/include/c++/4.6/x86_64-linux-gnu/." />
+            <Add directory="/usr/include/x86_64-linux-gnu" />
+            <Add directory="/usr/lib/gcc/x86_64-linux-gnu/4.6/include" />
+            <Add directory="/usr/lib/gcc/x86_64-linux-gnu/4.6/include-fixed" />
+            <Add directory="/usr/local/include" />
+         </Compiler>
+         <MakeCommands>
+            <Build command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/routing_driver/Makefile&quot;  VERBOSE=1 routing_driver" />
+            <CompileFile command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/routing_driver/Makefile&quot;  VERBOSE=1 &quot;$file&quot;" />
+            <Clean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/routing_driver/Makefile&quot;  VERBOSE=1 clean" />
+            <DistClean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/routing_driver/Makefile&quot;  VERBOSE=1 clean" />
+         </MakeCommands>
+      </Target>
+      <Target title="routing_driver/fast">
+         <Option output="/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/routing_driver/librouting_driver.a" prefix_auto="0" extension_auto="0" />
+         <Option working_dir="/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/routing_driver" />
+         <Option object_output="./" />
+         <Option type="2" />
+         <Option compiler="gcc" />
+         <Compiler>
+            <Add directory="/home/idsia/Repositories/rnp_xbee_bridge/src" />
+            <Add directory="/usr/include" />
+            <Add directory="/usr/include/c++/4.6" />
+            <Add directory="/usr/include/c++/4.6/backward" />
+            <Add directory="/usr/include/c++/4.6/x86_64-linux-gnu/." />
+            <Add directory="/usr/include/x86_64-linux-gnu" />
+            <Add directory="/usr/lib/gcc/x86_64-linux-gnu/4.6/include" />
+            <Add directory="/usr/lib/gcc/x86_64-linux-gnu/4.6/include-fixed" />
+            <Add directory="/usr/local/include" />
+         </Compiler>
+         <MakeCommands>
+            <Build command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/routing_driver/Makefile&quot;  VERBOSE=1 routing_driver/fast" />
+            <CompileFile command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/routing_driver/Makefile&quot;  VERBOSE=1 &quot;$file&quot;" />
+            <Clean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/routing_driver/Makefile&quot;  VERBOSE=1 clean" />
+            <DistClean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/routing_driver/Makefile&quot;  VERBOSE=1 clean" />
+         </MakeCommands>
+      </Target>
+      <Target title="gps_driver">
+         <Option output="/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/gps_driver/libgps_driver.a" prefix_auto="0" extension_auto="0" />
+         <Option working_dir="/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/gps_driver" />
+         <Option object_output="./" />
+         <Option type="2" />
+         <Option compiler="gcc" />
+         <Compiler>
+            <Add directory="/home/idsia/Repositories/rnp_xbee_bridge/src" />
+            <Add directory="/usr/include" />
+            <Add directory="/usr/include/c++/4.6" />
+            <Add directory="/usr/include/c++/4.6/backward" />
+            <Add directory="/usr/include/c++/4.6/x86_64-linux-gnu/." />
+            <Add directory="/usr/include/x86_64-linux-gnu" />
+            <Add directory="/usr/lib/gcc/x86_64-linux-gnu/4.6/include" />
+            <Add directory="/usr/lib/gcc/x86_64-linux-gnu/4.6/include-fixed" />
+            <Add directory="/usr/local/include" />
+         </Compiler>
+         <MakeCommands>
+            <Build command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/gps_driver/Makefile&quot;  VERBOSE=1 gps_driver" />
+            <CompileFile command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/gps_driver/Makefile&quot;  VERBOSE=1 &quot;$file&quot;" />
+            <Clean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/gps_driver/Makefile&quot;  VERBOSE=1 clean" />
+            <DistClean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/gps_driver/Makefile&quot;  VERBOSE=1 clean" />
+         </MakeCommands>
+      </Target>
+      <Target title="gps_driver/fast">
+         <Option output="/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/gps_driver/libgps_driver.a" prefix_auto="0" extension_auto="0" />
+         <Option working_dir="/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/gps_driver" />
+         <Option object_output="./" />
+         <Option type="2" />
+         <Option compiler="gcc" />
+         <Compiler>
+            <Add directory="/home/idsia/Repositories/rnp_xbee_bridge/src" />
+            <Add directory="/usr/include" />
+            <Add directory="/usr/include/c++/4.6" />
+            <Add directory="/usr/include/c++/4.6/backward" />
+            <Add directory="/usr/include/c++/4.6/x86_64-linux-gnu/." />
+            <Add directory="/usr/include/x86_64-linux-gnu" />
+            <Add directory="/usr/lib/gcc/x86_64-linux-gnu/4.6/include" />
+            <Add directory="/usr/lib/gcc/x86_64-linux-gnu/4.6/include-fixed" />
+            <Add directory="/usr/local/include" />
+         </Compiler>
+         <MakeCommands>
+            <Build command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/gps_driver/Makefile&quot;  VERBOSE=1 gps_driver/fast" />
+            <CompileFile command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/gps_driver/Makefile&quot;  VERBOSE=1 &quot;$file&quot;" />
+            <Clean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/gps_driver/Makefile&quot;  VERBOSE=1 clean" />
+            <DistClean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/gps_driver/Makefile&quot;  VERBOSE=1 clean" />
+         </MakeCommands>
+      </Target>
+      <Target title="xbee_interface">
+         <Option output="/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/xbee_interface/libxbee_interface.a" prefix_auto="0" extension_auto="0" />
+         <Option working_dir="/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/xbee_interface" />
+         <Option object_output="./" />
+         <Option type="2" />
+         <Option compiler="gcc" />
+         <Compiler>
+            <Add directory="/home/idsia/Repositories/rnp_xbee_bridge/src" />
+            <Add directory="/usr/include" />
+            <Add directory="/usr/include/c++/4.6" />
+            <Add directory="/usr/include/c++/4.6/backward" />
+            <Add directory="/usr/include/c++/4.6/x86_64-linux-gnu/." />
+            <Add directory="/usr/include/x86_64-linux-gnu" />
+            <Add directory="/usr/lib/gcc/x86_64-linux-gnu/4.6/include" />
+            <Add directory="/usr/lib/gcc/x86_64-linux-gnu/4.6/include-fixed" />
+            <Add directory="/usr/local/include" />
+         </Compiler>
+         <MakeCommands>
+            <Build command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/xbee_interface/Makefile&quot;  VERBOSE=1 xbee_interface" />
+            <CompileFile command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/xbee_interface/Makefile&quot;  VERBOSE=1 &quot;$file&quot;" />
+            <Clean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/xbee_interface/Makefile&quot;  VERBOSE=1 clean" />
+            <DistClean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/xbee_interface/Makefile&quot;  VERBOSE=1 clean" />
+         </MakeCommands>
+      </Target>
+      <Target title="xbee_interface/fast">
+         <Option output="/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/xbee_interface/libxbee_interface.a" prefix_auto="0" extension_auto="0" />
+         <Option working_dir="/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/xbee_interface" />
+         <Option object_output="./" />
+         <Option type="2" />
+         <Option compiler="gcc" />
+         <Compiler>
+            <Add directory="/home/idsia/Repositories/rnp_xbee_bridge/src" />
+            <Add directory="/usr/include" />
+            <Add directory="/usr/include/c++/4.6" />
+            <Add directory="/usr/include/c++/4.6/backward" />
+            <Add directory="/usr/include/c++/4.6/x86_64-linux-gnu/." />
+            <Add directory="/usr/include/x86_64-linux-gnu" />
+            <Add directory="/usr/lib/gcc/x86_64-linux-gnu/4.6/include" />
+            <Add directory="/usr/lib/gcc/x86_64-linux-gnu/4.6/include-fixed" />
+            <Add directory="/usr/local/include" />
+         </Compiler>
+         <MakeCommands>
+            <Build command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/xbee_interface/Makefile&quot;  VERBOSE=1 xbee_interface/fast" />
+            <CompileFile command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/xbee_interface/Makefile&quot;  VERBOSE=1 &quot;$file&quot;" />
+            <Clean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/xbee_interface/Makefile&quot;  VERBOSE=1 clean" />
+            <DistClean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/xbee_interface/Makefile&quot;  VERBOSE=1 clean" />
+         </MakeCommands>
+      </Target>
+      <Target title="xbee_app_data">
+         <Option output="/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/xbee_app_data/libxbee_app_data.a" prefix_auto="0" extension_auto="0" />
+         <Option working_dir="/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/xbee_app_data" />
+         <Option object_output="./" />
+         <Option type="2" />
+         <Option compiler="gcc" />
+         <Compiler>
+            <Add directory="/home/idsia/Repositories/rnp_xbee_bridge/src" />
+            <Add directory="/usr/include" />
+            <Add directory="/usr/include/c++/4.6" />
+            <Add directory="/usr/include/c++/4.6/backward" />
+            <Add directory="/usr/include/c++/4.6/x86_64-linux-gnu/." />
+            <Add directory="/usr/include/x86_64-linux-gnu" />
+            <Add directory="/usr/lib/gcc/x86_64-linux-gnu/4.6/include" />
+            <Add directory="/usr/lib/gcc/x86_64-linux-gnu/4.6/include-fixed" />
+            <Add directory="/usr/local/include" />
+         </Compiler>
+         <MakeCommands>
+            <Build command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/xbee_app_data/Makefile&quot;  VERBOSE=1 xbee_app_data" />
+            <CompileFile command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/xbee_app_data/Makefile&quot;  VERBOSE=1 &quot;$file&quot;" />
+            <Clean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/xbee_app_data/Makefile&quot;  VERBOSE=1 clean" />
+            <DistClean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/xbee_app_data/Makefile&quot;  VERBOSE=1 clean" />
+         </MakeCommands>
+      </Target>
+      <Target title="xbee_app_data/fast">
+         <Option output="/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/xbee_app_data/libxbee_app_data.a" prefix_auto="0" extension_auto="0" />
+         <Option working_dir="/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/xbee_app_data" />
+         <Option object_output="./" />
+         <Option type="2" />
+         <Option compiler="gcc" />
+         <Compiler>
+            <Add directory="/home/idsia/Repositories/rnp_xbee_bridge/src" />
+            <Add directory="/usr/include" />
+            <Add directory="/usr/include/c++/4.6" />
+            <Add directory="/usr/include/c++/4.6/backward" />
+            <Add directory="/usr/include/c++/4.6/x86_64-linux-gnu/." />
+            <Add directory="/usr/include/x86_64-linux-gnu" />
+            <Add directory="/usr/lib/gcc/x86_64-linux-gnu/4.6/include" />
+            <Add directory="/usr/lib/gcc/x86_64-linux-gnu/4.6/include-fixed" />
+            <Add directory="/usr/local/include" />
+         </Compiler>
+         <MakeCommands>
+            <Build command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/xbee_app_data/Makefile&quot;  VERBOSE=1 xbee_app_data/fast" />
+            <CompileFile command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/xbee_app_data/Makefile&quot;  VERBOSE=1 &quot;$file&quot;" />
+            <Clean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/xbee_app_data/Makefile&quot;  VERBOSE=1 clean" />
+            <DistClean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/xbee_app_data/Makefile&quot;  VERBOSE=1 clean" />
+         </MakeCommands>
+      </Target>
+      <Target title="timer">
+         <Option output="/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/timer/libtimer.a" prefix_auto="0" extension_auto="0" />
+         <Option working_dir="/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/timer" />
+         <Option object_output="./" />
+         <Option type="2" />
+         <Option compiler="gcc" />
+         <Compiler>
+            <Add directory="/home/idsia/Repositories/rnp_xbee_bridge/src" />
+            <Add directory="/usr/include" />
+            <Add directory="/usr/include/c++/4.6" />
+            <Add directory="/usr/include/c++/4.6/backward" />
+            <Add directory="/usr/include/c++/4.6/x86_64-linux-gnu/." />
+            <Add directory="/usr/include/x86_64-linux-gnu" />
+            <Add directory="/usr/lib/gcc/x86_64-linux-gnu/4.6/include" />
+            <Add directory="/usr/lib/gcc/x86_64-linux-gnu/4.6/include-fixed" />
+            <Add directory="/usr/local/include" />
+         </Compiler>
+         <MakeCommands>
+            <Build command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/timer/Makefile&quot;  VERBOSE=1 timer" />
+            <CompileFile command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/timer/Makefile&quot;  VERBOSE=1 &quot;$file&quot;" />
+            <Clean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/timer/Makefile&quot;  VERBOSE=1 clean" />
+            <DistClean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/timer/Makefile&quot;  VERBOSE=1 clean" />
+         </MakeCommands>
+      </Target>
+      <Target title="timer/fast">
+         <Option output="/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/timer/libtimer.a" prefix_auto="0" extension_auto="0" />
+         <Option working_dir="/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/timer" />
+         <Option object_output="./" />
+         <Option type="2" />
+         <Option compiler="gcc" />
+         <Compiler>
+            <Add directory="/home/idsia/Repositories/rnp_xbee_bridge/src" />
+            <Add directory="/usr/include" />
+            <Add directory="/usr/include/c++/4.6" />
+            <Add directory="/usr/include/c++/4.6/backward" />
+            <Add directory="/usr/include/c++/4.6/x86_64-linux-gnu/." />
+            <Add directory="/usr/include/x86_64-linux-gnu" />
+            <Add directory="/usr/lib/gcc/x86_64-linux-gnu/4.6/include" />
+            <Add directory="/usr/lib/gcc/x86_64-linux-gnu/4.6/include-fixed" />
+            <Add directory="/usr/local/include" />
+         </Compiler>
+         <MakeCommands>
+            <Build command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/timer/Makefile&quot;  VERBOSE=1 timer/fast" />
+            <CompileFile command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/timer/Makefile&quot;  VERBOSE=1 &quot;$file&quot;" />
+            <Clean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/timer/Makefile&quot;  VERBOSE=1 clean" />
+            <DistClean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/timer/Makefile&quot;  VERBOSE=1 clean" />
+         </MakeCommands>
+      </Target>
+      <Target title="end_node">
+         <Option output="/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/bin/end_node" prefix_auto="0" extension_auto="0" />
+         <Option working_dir="/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/bin" />
+         <Option object_output="./" />
+         <Option type="1" />
+         <Option compiler="gcc" />
+         <Compiler>
+            <Add directory="/home/idsia/Repositories/rnp_xbee_bridge/src" />
+            <Add directory="/home/idsia/Repositories/rnp_xbee_bridge/src/gps_driver" />
+            <Add directory="/home/idsia/Repositories/rnp_xbee_bridge/src/timer" />
+            <Add directory="/home/idsia/Repositories/rnp_xbee_bridge/src/xbee_app_data" />
+            <Add directory="/home/idsia/Repositories/rnp_xbee_bridge/src/xbee_interface" />
+            <Add directory="/usr/include" />
+            <Add directory="/usr/include/c++/4.6" />
+            <Add directory="/usr/include/c++/4.6/backward" />
+            <Add directory="/usr/include/c++/4.6/x86_64-linux-gnu/." />
+            <Add directory="/usr/include/x86_64-linux-gnu" />
+            <Add directory="/usr/lib/gcc/x86_64-linux-gnu/4.6/include" />
+            <Add directory="/usr/lib/gcc/x86_64-linux-gnu/4.6/include-fixed" />
+            <Add directory="/usr/local/include" />
+         </Compiler>
+         <MakeCommands>
+            <Build command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/end_node/Makefile&quot;  VERBOSE=1 end_node" />
+            <CompileFile command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/end_node/Makefile&quot;  VERBOSE=1 &quot;$file&quot;" />
+            <Clean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/end_node/Makefile&quot;  VERBOSE=1 clean" />
+            <DistClean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/end_node/Makefile&quot;  VERBOSE=1 clean" />
+         </MakeCommands>
+      </Target>
+      <Target title="end_node/fast">
+         <Option output="/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/bin/end_node" prefix_auto="0" extension_auto="0" />
+         <Option working_dir="/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/bin" />
+         <Option object_output="./" />
+         <Option type="1" />
+         <Option compiler="gcc" />
+         <Compiler>
+            <Add directory="/home/idsia/Repositories/rnp_xbee_bridge/src" />
+            <Add directory="/home/idsia/Repositories/rnp_xbee_bridge/src/gps_driver" />
+            <Add directory="/home/idsia/Repositories/rnp_xbee_bridge/src/timer" />
+            <Add directory="/home/idsia/Repositories/rnp_xbee_bridge/src/xbee_app_data" />
+            <Add directory="/home/idsia/Repositories/rnp_xbee_bridge/src/xbee_interface" />
+            <Add directory="/usr/include" />
+            <Add directory="/usr/include/c++/4.6" />
+            <Add directory="/usr/include/c++/4.6/backward" />
+            <Add directory="/usr/include/c++/4.6/x86_64-linux-gnu/." />
+            <Add directory="/usr/include/x86_64-linux-gnu" />
+            <Add directory="/usr/lib/gcc/x86_64-linux-gnu/4.6/include" />
+            <Add directory="/usr/lib/gcc/x86_64-linux-gnu/4.6/include-fixed" />
+            <Add directory="/usr/local/include" />
+         </Compiler>
+         <MakeCommands>
+            <Build command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/end_node/Makefile&quot;  VERBOSE=1 end_node/fast" />
+            <CompileFile command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/end_node/Makefile&quot;  VERBOSE=1 &quot;$file&quot;" />
+            <Clean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/end_node/Makefile&quot;  VERBOSE=1 clean" />
+            <DistClean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/end_node/Makefile&quot;  VERBOSE=1 clean" />
+         </MakeCommands>
+      </Target>
+      <Target title="ctrl_node">
+         <Option output="/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/bin/ctrl_node" prefix_auto="0" extension_auto="0" />
+         <Option working_dir="/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/bin" />
+         <Option object_output="./" />
+         <Option type="1" />
+         <Option compiler="gcc" />
+         <Compiler>
+            <Add directory="/home/idsia/Repositories/rnp_xbee_bridge/src" />
+            <Add directory="/home/idsia/Repositories/rnp_xbee_bridge/src/gps_driver" />
+            <Add directory="/home/idsia/Repositories/rnp_xbee_bridge/src/routing_driver" />
+            <Add directory="/home/idsia/Repositories/rnp_xbee_bridge/src/timer" />
+            <Add directory="/home/idsia/Repositories/rnp_xbee_bridge/src/xbee_app_data" />
+            <Add directory="/home/idsia/Repositories/rnp_xbee_bridge/src/xbee_interface" />
+            <Add directory="/usr/include" />
+            <Add directory="/usr/include/c++/4.6" />
+            <Add directory="/usr/include/c++/4.6/backward" />
+            <Add directory="/usr/include/c++/4.6/x86_64-linux-gnu/." />
+            <Add directory="/usr/include/x86_64-linux-gnu" />
+            <Add directory="/usr/lib/gcc/x86_64-linux-gnu/4.6/include" />
+            <Add directory="/usr/lib/gcc/x86_64-linux-gnu/4.6/include-fixed" />
+            <Add directory="/usr/local/include" />
+         </Compiler>
+         <MakeCommands>
+            <Build command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/ctrl_node/Makefile&quot;  VERBOSE=1 ctrl_node" />
+            <CompileFile command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/ctrl_node/Makefile&quot;  VERBOSE=1 &quot;$file&quot;" />
+            <Clean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/ctrl_node/Makefile&quot;  VERBOSE=1 clean" />
+            <DistClean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/ctrl_node/Makefile&quot;  VERBOSE=1 clean" />
+         </MakeCommands>
+      </Target>
+      <Target title="ctrl_node/fast">
+         <Option output="/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/bin/ctrl_node" prefix_auto="0" extension_auto="0" />
+         <Option working_dir="/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/bin" />
+         <Option object_output="./" />
+         <Option type="1" />
+         <Option compiler="gcc" />
+         <Compiler>
+            <Add directory="/home/idsia/Repositories/rnp_xbee_bridge/src" />
+            <Add directory="/home/idsia/Repositories/rnp_xbee_bridge/src/gps_driver" />
+            <Add directory="/home/idsia/Repositories/rnp_xbee_bridge/src/routing_driver" />
+            <Add directory="/home/idsia/Repositories/rnp_xbee_bridge/src/timer" />
+            <Add directory="/home/idsia/Repositories/rnp_xbee_bridge/src/xbee_app_data" />
+            <Add directory="/home/idsia/Repositories/rnp_xbee_bridge/src/xbee_interface" />
+            <Add directory="/usr/include" />
+            <Add directory="/usr/include/c++/4.6" />
+            <Add directory="/usr/include/c++/4.6/backward" />
+            <Add directory="/usr/include/c++/4.6/x86_64-linux-gnu/." />
+            <Add directory="/usr/include/x86_64-linux-gnu" />
+            <Add directory="/usr/lib/gcc/x86_64-linux-gnu/4.6/include" />
+            <Add directory="/usr/lib/gcc/x86_64-linux-gnu/4.6/include-fixed" />
+            <Add directory="/usr/local/include" />
+         </Compiler>
+         <MakeCommands>
+            <Build command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/ctrl_node/Makefile&quot;  VERBOSE=1 ctrl_node/fast" />
+            <CompileFile command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/ctrl_node/Makefile&quot;  VERBOSE=1 &quot;$file&quot;" />
+            <Clean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/ctrl_node/Makefile&quot;  VERBOSE=1 clean" />
+            <DistClean command="/usr/bin/make -f &quot;/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/ctrl_node/Makefile&quot;  VERBOSE=1 clean" />
+         </MakeCommands>
+      </Target>
+      </Build>
+      <Unit filename="/home/idsia/Repositories/rnp_xbee_bridge/src/ctrl_node/ctrl_node.cc">
+      </Unit>
+      <Unit filename="/home/idsia/Repositories/rnp_xbee_bridge/src/end_node/end_node.cc">
+      </Unit>
+      <Unit filename="/home/idsia/Repositories/rnp_xbee_bridge/src/gps_driver/gps_driver.cc">
+      </Unit>
+      <Unit filename="/home/idsia/Repositories/rnp_xbee_bridge/src/routing_driver/routing_driver.cc">
+      </Unit>
+      <Unit filename="/home/idsia/Repositories/rnp_xbee_bridge/src/timer/timer.cc">
+      </Unit>
+      <Unit filename="/home/idsia/Repositories/rnp_xbee_bridge/src/xbee_app_data/xbee_app_data.cc">
+      </Unit>
+      <Unit filename="/home/idsia/Repositories/rnp_xbee_bridge/src/xbee_interface/xbee_interface.cc">
+      </Unit>
+      <Unit filename="/home/idsia/Repositories/rnp_xbee_bridge/src/gps_driver/gps_driver.h">
+      </Unit>
+      <Unit filename="/home/idsia/Repositories/rnp_xbee_bridge/src/routing_driver/routing_driver.h">
+      </Unit>
+      <Unit filename="/home/idsia/Repositories/rnp_xbee_bridge/src/timer/timer.h">
+      </Unit>
+      <Unit filename="/home/idsia/Repositories/rnp_xbee_bridge/src/xbee_app_data/xbee_app_data.h">
+      </Unit>
+      <Unit filename="/home/idsia/Repositories/rnp_xbee_bridge/src/xbee_interface/xbee_interface.h">
+      </Unit>
+      <Unit filename="/home/idsia/Repositories/rnp_xbee_bridge/src/CMakeLists.txt">
+          <Option virtualFolder="CMake Files\" />
+      </Unit>
+      <Unit filename="/home/idsia/Repositories/rnp_xbee_bridge/src/routing_driver/CMakeLists.txt">
+          <Option virtualFolder="CMake Files\routing_driver\" />
+      </Unit>
+      <Unit filename="/home/idsia/Repositories/rnp_xbee_bridge/src/gps_driver/CMakeLists.txt">
+          <Option virtualFolder="CMake Files\gps_driver\" />
+      </Unit>
+      <Unit filename="/home/idsia/Repositories/rnp_xbee_bridge/src/xbee_interface/CMakeLists.txt">
+          <Option virtualFolder="CMake Files\xbee_interface\" />
+      </Unit>
+      <Unit filename="/home/idsia/Repositories/rnp_xbee_bridge/src/xbee_app_data/CMakeLists.txt">
+          <Option virtualFolder="CMake Files\xbee_app_data\" />
+      </Unit>
+      <Unit filename="/home/idsia/Repositories/rnp_xbee_bridge/src/timer/CMakeLists.txt">
+          <Option virtualFolder="CMake Files\timer\" />
+      </Unit>
+      <Unit filename="/home/idsia/Repositories/rnp_xbee_bridge/src/end_node/CMakeLists.txt">
+          <Option virtualFolder="CMake Files\end_node\" />
+      </Unit>
+      <Unit filename="/home/idsia/Repositories/rnp_xbee_bridge/src/ctrl_node/CMakeLists.txt">
+          <Option virtualFolder="CMake Files\ctrl_node\" />
+      </Unit>
+   </Project>
+</CodeBlocks_project_file>

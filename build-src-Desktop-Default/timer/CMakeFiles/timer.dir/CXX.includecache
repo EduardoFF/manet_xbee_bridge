@@ -1,0 +1,32 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/idsia/Repositories/rnp_xbee_bridge/src/dbg.h
+stdio.h
+-
+errno.h
+-
+string.h
+-
+
+/home/idsia/Repositories/rnp_xbee_bridge/src/timer/timer.cc
+timer.h
+/home/idsia/Repositories/rnp_xbee_bridge/src/timer/timer.h
+dbg.h
+/home/idsia/Repositories/rnp_xbee_bridge/src/timer/dbg.h
+unistd.h
+-
+
+/home/idsia/Repositories/rnp_xbee_bridge/src/timer/timer.h
+stdio.h
+-
+stdlib.h
+-
+pthread.h
+-
+

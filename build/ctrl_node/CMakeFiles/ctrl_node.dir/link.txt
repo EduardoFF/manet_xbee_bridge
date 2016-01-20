@@ -1,0 +1,1 @@
+/usr/bin/c++       CMakeFiles/ctrl_node.dir/ctrl_node.cc.o  -o ../bin/ctrl_node -rdynamic ../xbee_interface/libxbee_interface.a ../xbee_app_data/libxbee_app_data.a ../timer/libtimer.a -lpthread -llcm ../routing_driver/librouting_driver.a ../gps_driver/libgps_driver.a -Wl,-Bstatic -lxbeep -lxbee -Wl,-Bdynamic 

@@ -1,0 +1,36 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/idsia/Repositories/rnp_xbee_bridge/src/route2_entry_t.hpp
+lcm/lcm_coretypes.h
+-
+string
+-
+
+/home/idsia/Repositories/rnp_xbee_bridge/src/route2_table_t.hpp
+lcm/lcm_coretypes.h
+-
+string
+-
+vector
+-
+route2_entry_t.hpp
+/home/idsia/Repositories/rnp_xbee_bridge/src/route2_entry_t.hpp
+
+/home/idsia/Repositories/rnp_xbee_bridge/src/xbee_app_data/xbee_app_data.cc
+xbee_app_data.h
+/home/idsia/Repositories/rnp_xbee_bridge/src/xbee_app_data/xbee_app_data.h
+
+/home/idsia/Repositories/rnp_xbee_bridge/src/xbee_app_data/xbee_app_data.h
+iostream
+-
+unistd.h
+-
+route2_table_t.hpp
+/home/idsia/Repositories/rnp_xbee_bridge/src/xbee_app_data/route2_table_t.hpp
+

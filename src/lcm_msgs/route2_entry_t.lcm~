@@ -1,5 +1,6 @@
-struct route_entry_t
-{
-    string  node;
-    int16_t weight;     
+struct route2_entry_t
+{      
+       string dest;
+       string  node;
+       int16_t weight;     
 }

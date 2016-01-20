@@ -1,6 +1,6 @@
 struct route2_entry_t
 {      
-       string dest;
-       string  node;
+       string finalDest;
+       string  nextHop;
        int16_t weight;     
 }

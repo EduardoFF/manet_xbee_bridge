@@ -5,9 +5,9 @@
  * gps_driver.{cc,hh} -- interface to GPS data
  *
  * Author:		        Eduardo Feo Flushing
-       				Dalle Molle Institute for Artificial Intelligence
-				IDSIA - Manno - Lugano - Switzerland
-				(eduardo <at> idsia.ch)
+                    Dalle Molle Institute for Artificial Intelligence
+                IDSIA - Manno - Lugano - Switzerland
+                (eduardo <at> idsia.ch)
 
  *
  * This program is free software; you can redistribute it and/or modify
@@ -38,69 +38,57 @@
 #include "pose_t.hpp"
 using namespace std;
 
-
 struct TimestampedGPSData
 {
-  uint64_t timestamp;
-  float lat;
-  float lon;
-  float alt;
-TimestampedGPSData(uint64_t t, float _lat, float _lon, float _alt):
-  timestamp(t),
-    lat(_lat),
-    lon(_lon),
-    alt(_alt)
-  {}
-TimestampedGPSData():
-  timestamp(0),lon(0),lat(0),alt(0)
-  {}
-  
-};
+    uint64_t timestamp;
+    float lat;
+    float lon;
+    float alt;
+    TimestampedGPSData(uint64_t t, float _lat, float _lon, float _alt):
+        timestamp(t),
+        lat(_lat),
+        lon(_lon),
+        alt(_alt)
+    {}
+    TimestampedGPSData():
+        timestamp(0),lon(0),lat(0),alt(0)
+    {}
 
+};
 
 class GPSDriver 
 {
-  public:
+public:
     GPSDriver();
     GPSDriver(const char * url, const string &channel, bool autorun);
 
     bool run();
 
-    void handleMessage(const lcm::ReceiveBuffer* rbuf, 
-		       const std::string& chan, 
-		       const pose_t* msg);
+    void handleMessage(const lcm::ReceiveBuffer* rbuf,
+                       const std::string& chan,
+                       const pose_t* msg);
 
     TimestampedGPSData data();
-  private:
+private:
     static uint64_t getTime();
     static std::string getTimeStr();
     TimestampedGPSData m_latestData;
 
-
     const char * m_lcmURL;
-
     string m_lcmChannel;
-
     lcm::LCM m_lcm;
 
-    /**
-     * Mutex to control the access to member variables
-     */
-    pthread_mutex_t m_mutex;
-    /**
-     * Thread
-     */
-    pthread_t m_thread;
+    pthread_mutex_t m_mutex; /** Mutex to control the access to member variables **/
+    pthread_t m_thread;     /** Thread **/
+
     inline bool isLCMReady();
     inline void subscribeToChannel(const string & channel) ;
-
-
-    static void * internalThreadEntryFunc(void * ptr) 
+    static void * internalThreadEntryFunc(void * ptr)
     {
-      (( GPSDriver *) ptr)->internalThreadEntry();
-      return NULL;
+        (( GPSDriver *) ptr)->internalThreadEntry();
+        return NULL;
     }
     void internalThreadEntry();
 };
 
- #endif 
+#endif

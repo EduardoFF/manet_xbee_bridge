@@ -5,9 +5,9 @@
  * gps_driver.{cc,hh} -- interface to GPS data
  *
  * Author:		        Eduardo Feo Flushing
-       				Dalle Molle Institute for Artificial Intelligence
-				IDSIA - Manno - Lugano - Switzerland
-				(eduardo <at> idsia.ch)
+                    Dalle Molle Institute for Artificial Intelligence
+                IDSIA - Manno - Lugano - Switzerland
+                (eduardo <at> idsia.ch)
 
  *
  * This program is free software; you can redistribute it and/or modify
@@ -31,6 +31,8 @@
 #include <sstream>
 #include <fstream>
 #include <vector>
+#include <map>
+#include <utility>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
@@ -38,42 +40,46 @@
 #include <pthread.h>
 #include "route2_tree_t.hpp"
 #include "tree.h"
+
 using namespace std;
+
+struct Entry
+{
+    std::string endNode;
+    std::string nextHop;
+    int16_t     weight;
+};
+
+typedef vector<Entry> RoutingTable;
 
 struct TimestampedROUTINGData
 {
-  uint64_t timestamp;
-  int32_t n;
-  route2_table_t rtable;
-  
-TimestampedROUTINGData(uint64_t t, int32_t _n, route2_table_t _rtab):
-  timestamp(t),
-    n(_n),
-    rtable(_rtab)
-  {}
-TimestampedROUTINGData():
-  timestamp(0),n(0),rtable()
-  {}
-  
-};
+    uint64_t timestamp;
+    map<string, RoutingTable > route;
 
+
+    TimestampedROUTINGData():
+        timestamp(0)
+    {}
+
+};
 
 class ROUTINGDriver 
 {
-  public:
-    // Constructers 
+public:
+    // Constructers
     ROUTINGDriver();
     ROUTINGDriver(const char * url, const string &channel, bool autorun);
 
     bool run();
 
-    void handleMessage(const lcm::ReceiveBuffer* rbuf, 
-		       const std::string& chan, 
-		       const route2_tree_t* msg);
+    void handleMessage(const lcm::ReceiveBuffer* rbuf,
+                       const std::string& chan,
+                       const route2_tree_t* msg);
 
     TimestampedROUTINGData data();
 
-  private:
+private:
     static uint64_t getTime();
     static std::string getTimeStr();
     TimestampedROUTINGData m_latestRoutingData;
@@ -82,24 +88,18 @@ class ROUTINGDriver
     string m_lcmChannel;
     lcm::LCM m_lcm;
 
-    /**
-     * Mutex to control the access to member variables
-     */
-    pthread_mutex_t m_mutex;
-    /**
-     * Thread
-     */
-    pthread_t m_thread;
+    pthread_mutex_t m_mutex; /** Mutex to control the access to member variables**/
+    pthread_t m_thread; /** Thread **/
+
     inline bool isLCMReady();
     inline void subscribeToChannel(const string & channel) ;
 
-    static void * internalThreadEntryFunc(void * ptr) 
+    static void * internalThreadEntryFunc(void * ptr)
     {
-      (( ROUTINGDriver *) ptr)->internalThreadEntry();
-      return NULL;
+        (( ROUTINGDriver *) ptr)->internalThreadEntry();
+        return NULL;
     }
-
     void internalThreadEntry();
 };
 
- #endif 
+#endif

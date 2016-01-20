@@ -1,0 +1,2 @@
+/usr/bin/ar cr libgps_driver.a  CMakeFiles/gps_driver.dir/gps_driver.cc.o
+/usr/bin/ranlib libgps_driver.a

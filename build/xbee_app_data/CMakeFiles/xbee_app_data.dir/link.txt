@@ -1,0 +1,2 @@
+/usr/bin/ar cr libxbee_app_data.a  CMakeFiles/xbee_app_data.dir/xbee_app_data.cc.o
+/usr/bin/ranlib libxbee_app_data.a
