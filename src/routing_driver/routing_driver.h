@@ -47,7 +47,7 @@ struct Entry
 {
     std::string endNode;
     std::string nextHop;
-    int16_t     weight;
+    uint8_t     weight;
 };
 
 typedef vector<Entry> RoutingTable;

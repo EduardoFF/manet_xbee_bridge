@@ -29,38 +29,46 @@
 //#include "tree.h"
 namespace xbee_app_data
 {
-typedef struct Packet Packet;
+  typedef struct Packet Packet;
+  typedef uint8_t NodeId;
 
-static const char XBEEDATA_ENDNODEINFO = 1;
-static const char XBEEDATA_ROUTING = 2;
-static const char XBEEDATA_PLAN = 3;
+  static const char XBEEDATA_ENDNODEINFO = 1;
+  static const char XBEEDATA_ROUTING = 2;
+  static const char XBEEDATA_PLAN = 3;
+  static const char XBEE_MAX_PAYLOAD_LENGTH = 127;
 
-struct __attribute__((__packed__)) EndNodeInfo
-{
+    struct __attribute__((__packed__)) EndNodeInfo
+  {
     float latitude;
     float longitude;
     float altitude;
     int dataRate;
-};
+  };
 
-struct __attribute__((__packed__)) Routing
-{
-    int tabId;
-    int fragNb;
-    int nbOfFrag;
-    int nbBytes;
+  struct __attribute__((__packed__)) Routing
+  {
+    uint16_t tabId;
+    uint8_t  fragNb;
+    uint8_t  nbOfFrag;
+    uint8_t  nbBytes;
+  };
 
-};
+  struct __attribute__((__packed__)) RoutingEntry
+  {
+    NodeId  dest;
+    NodeId  nextHop;
+    uint8_t weight;
+  };
 
-struct __attribute__((__packed__)) Plan
-{
+  struct __attribute__((__packed__)) Plan
+  {
     int plan;
-};
+  };
 
-struct __attribute__((__packed__)) Header
-{
+  struct __attribute__((__packed__)) Header
+  {
     char type;
-};
+  };
 };
 
 std::ostream &operator<<(std::ostream &os, const xbee_app_data::EndNodeInfo &);

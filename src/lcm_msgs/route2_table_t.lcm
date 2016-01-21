@@ -1,6 +1,7 @@
+package rnp;
 struct route2_table_t
 {
     string node;
-    int32_t nbEntry;
+    int32_t n;
     route2_entry_t entries[n];
 }

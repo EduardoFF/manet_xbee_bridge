@@ -71,6 +71,9 @@ ROUTINGDriver::handleMessage(const lcm::ReceiveBuffer* rbuf,
         }
         routingData.route[nodeID] = table;
     }
+    pthread_mutex_lock(&m_mutex);
+    m_latestRoutingData = routingData;
+    pthread_mutex_unlock(&m_mutex);
 }
 
 /// returns time in milliseconds

@@ -9,7 +9,13 @@
 
 using namespace std;
 
+
+#define NO_XBEE_TEST
+
+#ifndef NO_XBEE_TEST
 XbeeInterface *g_xbee;
+#endif
+
 GPSDriver *g_gpsDriver;
 Timer *g_endNodeInfoTimer;
 char g_outBuf[130];
@@ -18,7 +24,7 @@ bool g_abort;
 /// Function to print Help if need be
 void print_help(const string Application)
 {
-    exit(0);
+  exit(0);
 }
 
 /// mutex for sending one packet at a time
@@ -28,98 +34,102 @@ pthread_mutex_t g_sendMutex;
 void
 endNodeInfoTimerCB(void *arg)
 {
-    if( g_abort )
-        return;
+  if( g_abort )
+    return;
 
-    /// lock the mutex first
-    pthread_mutex_lock(&g_sendMutex);
-    using namespace xbee_app_data;
+  /// lock the mutex first
+  pthread_mutex_lock(&g_sendMutex);
+  using namespace xbee_app_data;
 
-    //// compose node info packet
-    Header hdr;
+  //// compose node info packet
+  Header hdr;
 
-    /// make header
-    hdr.type = XBEEDATA_ENDNODEINFO;
-    memcpy(g_outBuf, &hdr, sizeof(Header));
+  /// make header
+  hdr.type = XBEEDATA_ENDNODEINFO;
+  memcpy(g_outBuf, &hdr, sizeof(Header));
 
-    // make payload
-    EndNodeInfo eInfo;
-    TimestampedGPSData gpsData = g_gpsDriver->data();
-    eInfo.latitude  = gpsData.lat;
-    eInfo.longitude = gpsData.lon;
-    eInfo.altitude  = gpsData.alt;
-    //  eInfo.dataRate  = g_dataRateMon->data();
+  // make payload
+  EndNodeInfo eInfo;
+  TimestampedGPSData gpsData = g_gpsDriver->data();
+  eInfo.latitude  = gpsData.lat;
+  eInfo.longitude = gpsData.lon;
+  eInfo.altitude  = gpsData.alt;
+  //  eInfo.dataRate  = g_dataRateMon->data();
 
-    memcpy(g_outBuf+sizeof(Header), &eInfo, sizeof(EndNodeInfo));
-    size_t buflen = sizeof(Header) + sizeof(EndNodeInfo);
-    XbeeInterface::TxInfo txInfo;
-    txInfo.reqAck = true;
-    txInfo.readCCA = false;
-    int retval = g_xbee->send(1, txInfo, g_outBuf, buflen);
-    if( retval == XbeeInterface::NO_ACK )
+  memcpy(g_outBuf+sizeof(Header), &eInfo, sizeof(EndNodeInfo));
+  size_t buflen = sizeof(Header) + sizeof(EndNodeInfo);
+  XbeeInterface::TxInfo txInfo;
+  txInfo.reqAck = true;
+  txInfo.readCCA = false;
+#ifndef NO_XBEE_TEST
+  int retval = g_xbee->send(1, txInfo, g_outBuf, buflen);
+  if( retval == XbeeInterface::NO_ACK )
     {
-        printf("send failed NOACK\n");
+      printf("send failed NOACK\n");
     }
-    else if( retval == XbeeInterface::TX_MAC_BUSY )
+  else if( retval == XbeeInterface::TX_MAC_BUSY )
     {
-        printf("send failed MACBUSY\n");
+      printf("send failed MACBUSY\n");
     }
-    else
+  else
     {
-        printf("send OK\n");
+      printf("send OK\n");
     }
-    pthread_mutex_unlock(&g_sendMutex);
+#endif
+  pthread_mutex_unlock(&g_sendMutex);
 }
 
 void
 signalHandler( int signum )
 {
-    g_abort = true;
-    printf("ending app...\n");
-    /// stop timers
-    if( g_endNodeInfoTimer )
+  g_abort = true;
+  printf("ending app...\n");
+  /// stop timers
+  if( g_endNodeInfoTimer )
     {
-        g_endNodeInfoTimer->stop();
-        while( g_endNodeInfoTimer->isRunning() )
+      g_endNodeInfoTimer->stop();
+      while( g_endNodeInfoTimer->isRunning() )
         {
-            sleep(1);
-            g_endNodeInfoTimer->stop();
+	  sleep(1);
+	  g_endNodeInfoTimer->stop();
         }
     }
-    delete g_endNodeInfoTimer;
-    delete g_gpsDriver;
-    delete g_xbee;
-    printf("done.\n");
-    exit(signum);
+  delete g_endNodeInfoTimer;
+  delete g_gpsDriver;
+#ifndef NO_XBEE_TEST
+  delete g_xbee;
+#endif
+  printf("done.\n");
+  exit(signum);
 }
 
 /// Receive the Xbee data and Use it
 void
 receiveData(uint16_t addr, void *data, char rssi, timespec timestamp, size_t len)
 {
-    using namespace xbee_app_data;
-    cout << "Got data from " << addr
-         << " rssi: " << rssi << ") "
-         <<  " len: " << len << endl;
-    cout << "-----------------------" << endl;
-    if (len > sizeof(Header))
+  using namespace xbee_app_data;
+  cout << "Got data from " << addr
+       << " rssi: " << rssi << ") "
+       <<  " len: " << len << endl;
+  cout << "-----------------------" << endl;
+  if (len > sizeof(Header))
     {
-        Header header;
-        memcpy(&header, data, sizeof(Header));
-        cout << "Header: " << header << endl;
+      Header header;
+      memcpy(&header, data, sizeof(Header));
+      cout << "Header: " << header << endl;
 
-        if (header.type == XBEEDATA_ROUTING )
+      if (header.type == XBEEDATA_ROUTING )
         {
-            if(len == sizeof(Header) + sizeof(Routing))
+	  if(len == sizeof(Header) + sizeof(Routing))
             {
-                Routing route;
-                memcpy(&route,
-                       (unsigned char *)data + sizeof(Header),
-                       sizeof(Routing));
+	      Routing route;
+	      memcpy(&route,
+		     (unsigned char *)data + sizeof(Header),
+		     sizeof(Routing));
             }
         }
     }
-    cout << "-----------------------" << endl;
+  cout << "-----------------------" << endl;
 }
 
 
@@ -127,48 +137,49 @@ receiveData(uint16_t addr, void *data, char rssi, timespec timestamp, size_t len
 int main(int argc, char * argv[])
 {
 
-    g_abort = false;
-    /// register signal
-    signal(SIGINT, signalHandler);
+  g_abort = false;
+  /// register signal
+  signal(SIGINT, signalHandler);
 
-    // Simple Command line parser
-    GetPot   cl(argc, argv);
-    if(cl.search(2, "--help", "-h") ) print_help(cl[0]);
-    cl.init_multiple_occurrence();
-    const string  xbeeDev  = cl.follow("/dev/ttyUSB1", "--dev");
-    const int     baudrate    = cl.follow(57600, "--baud");
-    const int     nodeId    = cl.follow(2, "--nodeid");
-    cl.enable_loop();
+  // Simple Command line parser
+  GetPot   cl(argc, argv);
+  if(cl.search(2, "--help", "-h") ) print_help(cl[0]);
+  cl.init_multiple_occurrence();
+  const string  xbeeDev  = cl.follow("/dev/ttyUSB1", "--dev");
+  const int     baudrate    = cl.follow(57600, "--baud");
+  const int     nodeId    = cl.follow(2, "--nodeid");
+  cl.enable_loop();
 
-    XbeeInterfaceParam xbeePar;
-    xbeePar.SourceAddress = nodeId;
-    xbeePar.brate = baudrate;
-    xbeePar.mode  = "xbee1";
-    xbeePar.Device = xbeeDev;
-    xbeePar.writeParams = false;
+  XbeeInterfaceParam xbeePar;
+  xbeePar.SourceAddress = nodeId;
+  xbeePar.brate = baudrate;
+  xbeePar.mode  = "xbee1";
+  xbeePar.Device = xbeeDev;
+  xbeePar.writeParams = false;
 
-    /// create mutexes
-    if (pthread_mutex_init(&g_sendMutex, NULL) != 0)
+  /// create mutexes
+  if (pthread_mutex_init(&g_sendMutex, NULL) != 0)
     {
-        fprintf(stderr, "mutex init failed\n");
-        fflush(stderr);
-        exit(-1);
+      fprintf(stderr, "mutex init failed\n");
+      fflush(stderr);
+      exit(-1);
+    }
+#ifndef NO_XBEE_TEST
+  /// create xbee connection
+  g_xbee = new XbeeInterface(xbeePar);
+#endif
+
+  /// create gpsDriver connection
+  g_gpsDriver = new GPSDriver("udpm://239.255.76.67:7667?ttl=1", "POSE", true);
+
+  g_endNodeInfoTimer = new Timer(TIMER_SECONDS, endNodeInfoTimerCB, NULL);
+  g_endNodeInfoTimer->startPeriodic(1);
+
+  /// Sleep
+  for(;;)
+    {
+      sleep(1);
     }
 
-    /// create xbee connection
-    g_xbee = new XbeeInterface(xbeePar);
-
-    /// create gpsDriver connection
-    g_gpsDriver = new GPSDriver("udpm://239.255.76.67:7667?ttl=1", "POSE", true);
-
-    g_endNodeInfoTimer = new Timer(TIMER_SECONDS, endNodeInfoTimerCB, NULL);
-    g_endNodeInfoTimer->startPeriodic(1);
-
-    /// Sleep
-    for(;;)
-    {
-        sleep(1);
-    }
-
-    return 0;
+  return 0;
 }
