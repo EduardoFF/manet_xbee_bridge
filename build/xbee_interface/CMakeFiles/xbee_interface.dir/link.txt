@@ -1,2 +1,0 @@
-/usr/bin/ar cr libxbee_interface.a  CMakeFiles/xbee_interface.dir/xbee_interface.cc.o
-/usr/bin/ranlib libxbee_interface.a

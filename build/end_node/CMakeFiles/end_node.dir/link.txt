@@ -1,1 +1,0 @@
-/usr/bin/c++       CMakeFiles/end_node.dir/end_node.cc.o  -o ../bin/end_node -rdynamic ../gps_driver/libgps_driver.a ../xbee_interface/libxbee_interface.a ../xbee_app_data/libxbee_app_data.a ../timer/libtimer.a -lpthread -llcm -Wl,-Bstatic -lxbeep -lxbee -Wl,-Bdynamic 
