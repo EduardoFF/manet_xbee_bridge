@@ -10,12 +10,6 @@
 
 using namespace std;
 
-// Function to print Help if need be
-void print_help(const string Application)
-{
-    exit(0);
-}
-
 XbeeInterface *g_xbee;
 ROUTINGDriver *g_routingDriver;
 Timer *g_endNodeInfoTimer;
@@ -26,12 +20,12 @@ bool g_abort;
 /// mutex for sending one packet at a time
 pthread_mutex_t g_sendMutex;
 
+/// Function to print Help if need be
+void print_help(const string Application)
+{
+    exit(0);
+}
 
-
-
-
-
-/////////////////////////////////////////////////////
 ///// here we send the node info packet /////
 void
 endNodeInfoTimerCB(void *arg)
@@ -46,13 +40,19 @@ endNodeInfoTimerCB(void *arg)
     Header hdr;
 
     /// make header
-    hdr.type = XBEEDATA_ENDNODEINFO;
+    hdr.type = XBEEDATA_ROUTING;
     memcpy(g_outBuf, &hdr, sizeof(Header));
 
     // make payload
-    //structure the data packets
+    //structure the data packets for Xbee
     Routing route;
     TimestampedROUTINGData routingData = g_routingDriver->data();
+    //
+    //
+    //
+    //
+    //
+
 
 
 
@@ -79,8 +79,6 @@ endNodeInfoTimerCB(void *arg)
 
     pthread_mutex_unlock(&g_sendMutex);
 }
-///
-/////////////////////////////////////////////////////
 
 void
 signalHandler( int signum )
@@ -106,11 +104,7 @@ signalHandler( int signum )
 }
 
 void
-receiveData(uint16_t addr, 
-            void *data,
-            char rssi,
-            timespec timestamp,
-            size_t len)
+receiveData(uint16_t addr, void *data, char rssi, timespec timestamp, size_t len)
 {
     using namespace xbee_app_data;
     cout << "Got data from " << addr
@@ -134,22 +128,6 @@ receiveData(uint16_t addr,
                 cout << "EndNodeInfo: " << eInfo << endl;
             }
         }
-
-        else if (header.type == XBEEDATA_ROUTING)
-        {
-            if(len == sizeof(Header) + sizeof(Routing))
-            {
-                Routing route;
-                memcpy(&route,
-                       (unsigned char *)data + sizeof(Header),
-                       sizeof(Routing));
-                cout << "Routing: " << route.tabId << endl;
-                cout << "Routing: " << route.fragNb << endl;
-                cout << "Routing: " << route.nbOfFrag<< endl;
-                cout << "Routing: " << route.nbBytes << endl;
-            }
-        }
-
     }
     cout << "-----------------------" << endl;
 }
@@ -157,7 +135,6 @@ receiveData(uint16_t addr,
 /////////////// Beginning of Main program //////////////////
 int main(int argc, char * argv[])
 {
-
     g_abort = false;
     /// register signal
     signal(SIGINT, signalHandler);
@@ -167,13 +144,12 @@ int main(int argc, char * argv[])
     if(cl.search(2, "--help", "-h") ) print_help(cl[0]);
     cl.init_multiple_occurrence();
     const string  xbeeDev  = cl.follow("/dev/ttyUSB1", "--dev");
-    const int     baudrate    = cl.follow(57600, "--baud");
-    const int     nodeId    = cl.follow(1, "--nodeid");
+    const int     baudrate = cl.follow(57600, "--baud");
+    const int     nodeId   = cl.follow(1, "--nodeid");
     cl.enable_loop();
 
     XbeeInterfaceParam xbeePar;
     xbeePar.SourceAddress = nodeId;
-
     xbeePar.brate = baudrate;
     xbeePar.mode  = "xbee1";
     xbeePar.Device = xbeeDev;
@@ -187,17 +163,22 @@ int main(int argc, char * argv[])
         exit(-1);
     }
 
-
     printf("Creating xbeeInterface\n");
     fflush(stdout);
+
+    /// create Xbee communication
     g_xbee = new XbeeInterface(xbeePar);
+    /// Listen for messages
     g_xbee->registerReceive(&receiveData);
 
+    /// create routing Driver
     g_routingDriver = new ROUTINGDriver("udpm://239.255.76.67:7677?ttl=1", "ROUTE", true);
+
+    // does it need to be modified???
     g_endNodeInfoTimer = new Timer(TIMER_SECONDS, endNodeInfoTimerCB, NULL);
     g_endNodeInfoTimer->startPeriodic(1);
 
-
+    /// Sleep
     for(;;)
     {
         sleep(1);

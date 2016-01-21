@@ -7,9 +7,7 @@ GPSDriver::GPSDriver()
 {
 }
 
-GPSDriver::GPSDriver(const char * url,
-             const string &channel,
-             bool autorun)
+GPSDriver::GPSDriver(const char * url,const string &channel,bool autorun)
 {
   /// Create a new LCM instance
   m_lcm = lcm_create(url);

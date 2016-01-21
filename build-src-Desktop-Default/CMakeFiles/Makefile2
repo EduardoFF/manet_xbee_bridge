@@ -321,10 +321,10 @@ end_node/preinstall:
 # Target rules for target end_node/CMakeFiles/end_node.dir
 
 # All Build rule for target.
-end_node/CMakeFiles/end_node.dir/all: gps_driver/CMakeFiles/gps_driver.dir/all
-end_node/CMakeFiles/end_node.dir/all: xbee_interface/CMakeFiles/xbee_interface.dir/all
 end_node/CMakeFiles/end_node.dir/all: xbee_app_data/CMakeFiles/xbee_app_data.dir/all
 end_node/CMakeFiles/end_node.dir/all: timer/CMakeFiles/timer.dir/all
+end_node/CMakeFiles/end_node.dir/all: xbee_interface/CMakeFiles/xbee_interface.dir/all
+end_node/CMakeFiles/end_node.dir/all: gps_driver/CMakeFiles/gps_driver.dir/all
 	$(MAKE) -f end_node/CMakeFiles/end_node.dir/build.make end_node/CMakeFiles/end_node.dir/depend
 	$(MAKE) -f end_node/CMakeFiles/end_node.dir/build.make end_node/CMakeFiles/end_node.dir/build
 	$(CMAKE_COMMAND) -E cmake_progress_report /home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/CMakeFiles  2
@@ -374,11 +374,11 @@ ctrl_node/preinstall:
 # Target rules for target ctrl_node/CMakeFiles/ctrl_node.dir
 
 # All Build rule for target.
-ctrl_node/CMakeFiles/ctrl_node.dir/all: routing_driver/CMakeFiles/routing_driver.dir/all
-ctrl_node/CMakeFiles/ctrl_node.dir/all: gps_driver/CMakeFiles/gps_driver.dir/all
-ctrl_node/CMakeFiles/ctrl_node.dir/all: xbee_interface/CMakeFiles/xbee_interface.dir/all
 ctrl_node/CMakeFiles/ctrl_node.dir/all: xbee_app_data/CMakeFiles/xbee_app_data.dir/all
 ctrl_node/CMakeFiles/ctrl_node.dir/all: timer/CMakeFiles/timer.dir/all
+ctrl_node/CMakeFiles/ctrl_node.dir/all: routing_driver/CMakeFiles/routing_driver.dir/all
+ctrl_node/CMakeFiles/ctrl_node.dir/all: xbee_interface/CMakeFiles/xbee_interface.dir/all
+ctrl_node/CMakeFiles/ctrl_node.dir/all: gps_driver/CMakeFiles/gps_driver.dir/all
 	$(MAKE) -f ctrl_node/CMakeFiles/ctrl_node.dir/build.make ctrl_node/CMakeFiles/ctrl_node.dir/depend
 	$(MAKE) -f ctrl_node/CMakeFiles/ctrl_node.dir/build.make ctrl_node/CMakeFiles/ctrl_node.dir/build
 	$(CMAKE_COMMAND) -E cmake_progress_report /home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/CMakeFiles  1
@@ -408,21 +408,6 @@ ctrl_node/CMakeFiles/ctrl_node.dir/clean:
 # clean rule for target.
 clean: ctrl_node/CMakeFiles/ctrl_node.dir/clean
 .PHONY : clean
-
-#=============================================================================
-# Directory level rules for directory lcm_msgs
-
-# Convenience name for "all" pass in the directory.
-lcm_msgs/all:
-.PHONY : lcm_msgs/all
-
-# Convenience name for "clean" pass in the directory.
-lcm_msgs/clean:
-.PHONY : lcm_msgs/clean
-
-# Convenience name for "preinstall" pass in the directory.
-lcm_msgs/preinstall:
-.PHONY : lcm_msgs/preinstall
 
 #=============================================================================
 # Special targets to cleanup operation of make.

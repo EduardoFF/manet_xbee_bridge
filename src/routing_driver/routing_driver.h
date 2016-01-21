@@ -57,10 +57,9 @@ struct TimestampedROUTINGData
     uint64_t timestamp;
     map<string, RoutingTable > route;
 
-
-    TimestampedROUTINGData():
-        timestamp(0)
-    {}
+    TimestampedROUTINGData(): timestamp(0)
+    {
+    }
 
 };
 

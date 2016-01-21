@@ -9,17 +9,17 @@
 
 using namespace std;
 
-// Function to print Help if need be
-void print_help(const string Application)
-{
-    exit(0);
-}
-
 XbeeInterface *g_xbee;
 GPSDriver *g_gpsDriver;
 Timer *g_endNodeInfoTimer;
 char g_outBuf[130];
 bool g_abort;
+
+/// Function to print Help if need be
+void print_help(const string Application)
+{
+    exit(0);
+}
 
 /// mutex for sending one packet at a time
 pthread_mutex_t g_sendMutex;
@@ -30,6 +30,7 @@ endNodeInfoTimerCB(void *arg)
 {
     if( g_abort )
         return;
+
     /// lock the mutex first
     pthread_mutex_lock(&g_sendMutex);
     using namespace xbee_app_data;
@@ -70,7 +71,6 @@ endNodeInfoTimerCB(void *arg)
     pthread_mutex_unlock(&g_sendMutex);
 }
 
-
 void
 signalHandler( int signum )
 {
@@ -91,8 +91,37 @@ signalHandler( int signum )
     delete g_xbee;
     printf("done.\n");
     exit(signum);
-
 }
+
+/// Receive the Xbee data and Use it
+void
+receiveData(uint16_t addr, void *data, char rssi, timespec timestamp, size_t len)
+{
+    using namespace xbee_app_data;
+    cout << "Got data from " << addr
+         << " rssi: " << rssi << ") "
+         <<  " len: " << len << endl;
+    cout << "-----------------------" << endl;
+    if (len > sizeof(Header))
+    {
+        Header header;
+        memcpy(&header, data, sizeof(Header));
+        cout << "Header: " << header << endl;
+
+        if (header.type == XBEEDATA_ROUTING )
+        {
+            if(len == sizeof(Header) + sizeof(Routing))
+            {
+                Routing route;
+                memcpy(&route,
+                       (unsigned char *)data + sizeof(Header),
+                       sizeof(Routing));
+            }
+        }
+    }
+    cout << "-----------------------" << endl;
+}
+
 
 /////////////// Beginning of Main program //////////////////
 int main(int argc, char * argv[])
@@ -113,7 +142,6 @@ int main(int argc, char * argv[])
 
     XbeeInterfaceParam xbeePar;
     xbeePar.SourceAddress = nodeId;
-
     xbeePar.brate = baudrate;
     xbeePar.mode  = "xbee1";
     xbeePar.Device = xbeeDev;
@@ -127,11 +155,16 @@ int main(int argc, char * argv[])
         exit(-1);
     }
 
+    /// create xbee connection
     g_xbee = new XbeeInterface(xbeePar);
+
+    /// create gpsDriver connection
     g_gpsDriver = new GPSDriver("udpm://239.255.76.67:7667?ttl=1", "POSE", true);
+
     g_endNodeInfoTimer = new Timer(TIMER_SECONDS, endNodeInfoTimerCB, NULL);
     g_endNodeInfoTimer->startPeriodic(1);
 
+    /// Sleep
     for(;;)
     {
         sleep(1);

@@ -41,7 +41,6 @@ IF(NOT CMAKE_INSTALL_LOCAL_ONLY)
   INCLUDE("/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/timer/cmake_install.cmake")
   INCLUDE("/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/end_node/cmake_install.cmake")
   INCLUDE("/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/ctrl_node/cmake_install.cmake")
-  INCLUDE("/home/idsia/Repositories/rnp_xbee_bridge/build-src-Desktop-Default/lcm_msgs/cmake_install.cmake")
 
 ENDIF(NOT CMAKE_INSTALL_LOCAL_ONLY)
 

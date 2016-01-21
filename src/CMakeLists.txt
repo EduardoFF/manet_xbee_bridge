@@ -53,7 +53,7 @@ add_subdirectory(xbee_app_data)
 add_subdirectory(timer)
 add_subdirectory(end_node)
 add_subdirectory(ctrl_node)
-add_subdirectory(lcm_msgs)
+
 
 
 
