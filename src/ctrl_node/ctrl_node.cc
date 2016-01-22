@@ -19,7 +19,7 @@ using namespace std;
 #endif
 
 
-#define NO_XBEE_TEST
+//#define NO_XBEE_TEST
 
 XbeeInterface *g_xbee;
 ROUTINGDriver *g_routingDriver;
@@ -113,23 +113,32 @@ sendRoutingDataTimerCB(void *arg)
 		 &hdr, sizeof(Header));
 	  /// --- now the routing header
 	  Routing routeHdr;
+	  dataVec.resize(dataVec.size() + sizeof(Routing) );
+	  memcpy(&dataVec[dataVec.size() - sizeof(Routing)],
+		 &routeHdr, sizeof(Routing));
+	  
 	  /// let's forget for a moment about the fragment numbers
 	  int nbytes=0;
 	 
 	  while(it != routingData.route.end() )
 	    {
 	      std::string nodedesc = it->first;
+	      cout << "pushing table of " << nodedesc << endl;
 	      RoutingTable table = it->second;
+	      cout << table.size() << " entries " << endl;
 	      /// can we fit all entries here ?
-	      if( dataVec.size() + sizeof(xbee_app_data::NodeId)
+	      if( dataVec.size() + sizeof(xbee_app_data::RoutingTableHdr)
 		  + sizeof(xbee_app_data::RoutingEntry)*table.size()
 		  <= XBEE_MAX_PAYLOAD_LENGTH )
 		{
+		  RoutingTableHdr rtHdr;
 		  /// we need somehow to map node identifiers to numeric ids (0-255)
 		  NodeId nid = getNodeId(nodedesc);
-		  dataVec.resize(dataVec.size() + sizeof(NodeId) );
-		  memcpy(&dataVec[dataVec.size() - sizeof(NodeId)],
-			 &nid, sizeof(NodeId));		    
+		  rtHdr.nodeId = nid;
+		  rtHdr.nEntries = static_cast<uint8_t>(table.size());
+		  dataVec.resize(dataVec.size() + sizeof(RoutingTableHdr) );
+		  memcpy(&dataVec[dataVec.size() - sizeof(RoutingTableHdr)],
+			 &rtHdr, sizeof(RoutingTableHdr));		    
 		  
 		  for(int j=0; j<table.size(); j++)
 		    {
@@ -139,8 +148,9 @@ sendRoutingDataTimerCB(void *arg)
 		      rtentry.weight = table[j].weight;
 		      dataVec.resize(dataVec.size() + sizeof(RoutingEntry) );
 		      memcpy(&dataVec[dataVec.size() - sizeof(RoutingEntry)],
-			     &rtentry, sizeof(RoutingEntry));		      
-		    }	      
+			     &rtentry, sizeof(RoutingEntry));
+		    }
+		  cout << "byte count " << dataVec.size() << endl;
 		}
 	      else
 		{
@@ -163,7 +173,7 @@ sendRoutingDataTimerCB(void *arg)
       uint8_t fgn = 0;
       FOREACH(jt, g_routingXbeeMsgs)
 	{
-	  assert((*jt).size() < sizeof(Header) + sizeof(Routing));
+	  assert((*jt).size() >= sizeof(Header) + sizeof(Routing));
 	  if( (*jt).size() < sizeof(Header) + sizeof(Routing) )
 	    {
 	      fprintf(stderr, "something wrong here (%u < %u)\n",
@@ -177,6 +187,7 @@ sendRoutingDataTimerCB(void *arg)
 	  routeHdr->nbBytes = (*jt).size() - sizeof(Header) - sizeof(Routing);
 	}
       /// we're done
+      g_lastRoutingDataSent = routingData;
     }
   else
     {
@@ -190,6 +201,7 @@ sendRoutingDataTimerCB(void *arg)
     {
       printf("sending msgs %d out of %d with size %u\n", i+1,
 	     g_routingXbeeMsgs.size(), g_routingXbeeMsgs[i].size() );
+      std::cout << +(g_routingXbeeMsgs[i][0]) << std::endl;
   
       memcpy(g_outBuf, &g_routingXbeeMsgs[i][0], g_routingXbeeMsgs[i].size());
       size_t buflen = g_routingXbeeMsgs[i].size();
@@ -198,7 +210,7 @@ sendRoutingDataTimerCB(void *arg)
       txInfo.readCCA = false;
 
 #ifndef NO_XBEE_TEST
-      int retval = g_xbee->send(1, txInfo, g_outBuf, buflen);
+      int retval = g_xbee->send(2, txInfo, g_outBuf, buflen);
       if( retval == XbeeInterface::NO_ACK )
 	{
 	  printf("send failed NOACK\n");
@@ -245,7 +257,7 @@ receiveData(uint16_t addr, void *data, char rssi, timespec timestamp, size_t len
 {
   using namespace xbee_app_data;
   cout << "Got data from " << addr
-       << " rssi: " << rssi << ") "
+       << " rssi: " << +rssi << ") "
        <<  " len: " << len << endl;
   cout << "-----------------------" << endl;
   if (len > sizeof(Header))
@@ -273,6 +285,7 @@ receiveData(uint16_t addr, void *data, char rssi, timespec timestamp, size_t len
 int main(int argc, char * argv[])
 {
   g_abort = false;
+  g_lastRoutingDataSent.timestamp = 0;
   /// register signal
   signal(SIGINT, signalHandler);
 
@@ -280,7 +293,7 @@ int main(int argc, char * argv[])
   GetPot   cl(argc, argv);
   if(cl.search(2, "--help", "-h") ) print_help(cl[0]);
   cl.init_multiple_occurrence();
-  const string  xbeeDev  = cl.follow("/dev/ttyUSB1", "--dev");
+  const string  xbeeDev  = cl.follow("/dev/ttyUSB0", "--dev");
   const int     baudrate = cl.follow(57600, "--baud");
   const int     nodeId   = cl.follow(1, "--nodeid");
   cl.enable_loop();

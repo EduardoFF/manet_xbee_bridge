@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <GetPot.hpp>
 #include "gps_driver.h"
+#include "routing_driver.h"
 #include "xbee_interface.h"
 #include "xbee_app_data.h"
 #include "timer.h"
@@ -10,16 +11,21 @@
 using namespace std;
 
 
-#define NO_XBEE_TEST
+//#define NO_XBEE_TEST
 
 #ifndef NO_XBEE_TEST
 XbeeInterface *g_xbee;
 #endif
 
+ROUTINGDriver *g_routingDriver;
 GPSDriver *g_gpsDriver;
 Timer *g_endNodeInfoTimer;
 char g_outBuf[130];
 bool g_abort;
+
+
+uint16_t g_lastRoutingTableRcv = 0;
+std::set<uint8_t> g_lastRoutingFragments;
 
 /// Function to print Help if need be
 void print_help(const string Application)
@@ -29,6 +35,17 @@ void print_help(const string Application)
 
 /// mutex for sending one packet at a time
 pthread_mutex_t g_sendMutex;
+
+
+std::string
+getNodeDesc(uint8_t nid)
+{
+  if( !nid )
+    return "SINK";
+  ostringstream ss;
+  ss << "172.16.0." << +nid;
+  return ss.str();
+}
 
 ///// here we send the node info packet /////
 void
@@ -59,7 +76,7 @@ endNodeInfoTimerCB(void *arg)
   memcpy(g_outBuf+sizeof(Header), &eInfo, sizeof(EndNodeInfo));
   size_t buflen = sizeof(Header) + sizeof(EndNodeInfo);
   XbeeInterface::TxInfo txInfo;
-  txInfo.reqAck = true;
+  txInfo.reqAck = false;
   txInfo.readCCA = false;
 #ifndef NO_XBEE_TEST
   int retval = g_xbee->send(1, txInfo, g_outBuf, buflen);
@@ -105,28 +122,102 @@ signalHandler( int signum )
 
 /// Receive the Xbee data and Use it
 void
-receiveData(uint16_t addr, void *data, char rssi, timespec timestamp, size_t len)
+receiveData(uint16_t addr, void *data,
+	    char rssi, timespec timestamp, size_t len)
 {
   using namespace xbee_app_data;
   cout << "Got data from " << addr
-       << " rssi: " << rssi << ") "
+       << " rssi: " << +rssi << ") "
        <<  " len: " << len << endl;
   cout << "-----------------------" << endl;
   if (len > sizeof(Header))
     {
       Header header;
       memcpy(&header, data, sizeof(Header));
-      cout << "Header: " << header << endl;
+      cout << "Header: " << +(header.type) << endl;
 
       if (header.type == XBEEDATA_ROUTING )
         {
-	  if(len == sizeof(Header) + sizeof(Routing))
+	  if(len >= sizeof(Header) + sizeof(Routing))
             {
 	      Routing route;
 	      memcpy(&route,
 		     (unsigned char *)data + sizeof(Header),
 		     sizeof(Routing));
+	      if( route.tabId > g_lastRoutingTableRcv )
+		{
+		  printf("NEW TREE %d\n", route.tabId);
+		  /// we clear the routing table,
+		  /// annotate the timestamp
+		  g_routingDriver->clearData(0);
+		  g_lastRoutingFragments.clear();
+		  g_lastRoutingTableRcv=route.tabId;
+		}
+
+	      /// check if we already got this fragment
+	      if( g_lastRoutingFragments.find(route.fragNb) !=
+		  g_lastRoutingFragments.end())
+		{
+		  /// we got it before, so we dont need to process it again
+		  return;
+		}
+	      size_t bcnt = sizeof(Header) + sizeof(Routing);
+	      if( len != bcnt + route.nbBytes )
+		{
+		  fprintf(stderr, "Incorrect buffer length (%u) should be %u\n",
+			  len, sizeof(Header) + sizeof(Routing) + route.nbBytes);
+		  return;
+		}
+	      /// so far so good, not we can read the remaining len-bcnt bytes
+	      unsigned char *ptr = (unsigned char *)data + bcnt;
+	      while(bcnt < len)
+		{
+		  if( len-bcnt < sizeof(RoutingTableHdr) )
+		    {
+		      fprintf(stderr, "Invalid length for routing msg (routing header)\n");
+		      exit(1);
+		    }
+		  RoutingTableHdr *rtHdr = (RoutingTableHdr*)ptr;
+		  std::string nodedesc = getNodeDesc(rtHdr->nodeId);
+		  int nentries = rtHdr->nEntries;
+		  std::cout << "TABLE FOR " << nodedesc
+			    << " with " << nentries << " entries" << endl;
+		  ptr+=sizeof(RoutingTableHdr);
+		  bcnt+=sizeof(RoutingTableHdr);
+		  for(int j=0; j<nentries;j++)
+		    {
+		      if( len-bcnt < sizeof(RoutingEntry) )
+			{
+			  fprintf(stderr, "Invalid length for routing msg (routing header)\n");
+			  exit(1);
+			}
+		      RoutingEntry *rentry = (RoutingEntry*)ptr;
+		      Entry entry;
+		      entry.endNode = getNodeDesc(rentry->dest);
+		      entry.nextHop = getNodeDesc(rentry->nextHop);
+		      entry.weight = rentry->weight;
+		      g_routingDriver->addEntry(nodedesc, entry);
+		      ptr+=sizeof(RoutingEntry);
+		      bcnt+=sizeof(RoutingEntry);		 
+		    }
+		}
+	      if( bcnt == len)
+		{
+		  printf("Read all bytes :)\n");
+		}
+	      printf("NEW FRAGMENT %d\n", route.fragNb);
+	      printf("got %d out of %d\n", route.fragNb, route.nbOfFrag);
+	      g_lastRoutingFragments.insert(route.fragNb);
+	      g_routingDriver->publishLCM();
+	      if( g_lastRoutingFragments.size() == route.nbOfFrag )
+		{
+		  std::cout << "NEW TABLE " << g_routingDriver->data() << std::endl;
+		}	      
             }
+	  else
+	    {
+	      fprintf(stderr, "Invalid length for routing msg\n");
+	    }
         }
     }
   cout << "-----------------------" << endl;
@@ -167,13 +258,18 @@ int main(int argc, char * argv[])
 #ifndef NO_XBEE_TEST
   /// create xbee connection
   g_xbee = new XbeeInterface(xbeePar);
+  g_xbee->registerReceive(&receiveData);
 #endif
 
   /// create gpsDriver connection
   g_gpsDriver = new GPSDriver("udpm://239.255.76.67:7667?ttl=1", "POSE", true);
 
+  /// create routing Driver -- we don't need to listen LCM 
+  g_routingDriver = new ROUTINGDriver("udpm://239.255.76.67:7667?ttl=1", "RNP", false);
+
+
   g_endNodeInfoTimer = new Timer(TIMER_SECONDS, endNodeInfoTimerCB, NULL);
-  g_endNodeInfoTimer->startPeriodic(1);
+  //  g_endNodeInfoTimer->startPeriodic(1);
 
   /// Sleep
   for(;;)

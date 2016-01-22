@@ -28,6 +28,7 @@
 #include <strings.h>
 #include <set>
 #include <string>
+#include <iostream>
 #include <sstream>
 #include <fstream>
 #include <vector>
@@ -60,8 +61,8 @@ struct TimestampedROUTINGData
     TimestampedROUTINGData(): timestamp(0)
     {
     }
-
 };
+std::ostream &operator<<(std::ostream &, const TimestampedROUTINGData &);
 
 class ROUTINGDriver 
 {
@@ -77,7 +78,9 @@ public:
                        const route2_tree_t* msg);
 
     TimestampedROUTINGData data();
-
+    void clearData(uint64_t t);
+    void addEntry(std::string, Entry &);
+    void publishLCM();
 private:
     static uint64_t getTime();
     static std::string getTimeStr();
@@ -92,6 +95,7 @@ private:
 
     inline bool isLCMReady();
     inline void subscribeToChannel(const string & channel) ;
+
 
     static void * internalThreadEntryFunc(void * ptr)
     {

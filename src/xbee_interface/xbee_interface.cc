@@ -16,7 +16,7 @@ using namespace std;
 
 /* ========================================================================== */
 
-char rcv_msg[100];
+char rcv_msg[130];
 
 class MyConnection: public libxbee::ConCallback {
 public:
@@ -202,7 +202,19 @@ XbeeInterface::send(uint16_t addr, TxInfo &txPar, const void *data, size_t size)
 
     debug("Trying to transmit data packet to %d of size %d", 
 	  addr, size);
-    if( err = con->Tx((const unsigned char *)data, size) )
+#ifndef NDEBUG
+    unsigned char *cdata = (unsigned char *)data;
+    for (int i = 0; i < size; i++) {
+      std::cout << "[" <<  (cdata)[i] << "]";
+      printf("%3d: 0x%02x - %c - %X\n" 
+	     ,i
+	     ,(unsigned char)(cdata)[i]
+	     ,((((cdata)[i] >= ' ') && ((cdata)[i] <= '~'))?(cdata)[i]:'.')
+	     ,(cdata)[i] );
+    }
+    std::cout << "\n";
+#endif
+    if( err = con->Tx((const unsigned char *)data, (int) size) )
       {
 	debug("xbee ret %d", err);
 	log_info("xbee tx returned %d", err);

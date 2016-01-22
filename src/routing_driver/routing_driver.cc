@@ -8,20 +8,42 @@ ROUTINGDriver::ROUTINGDriver()
 {
 }
 
+
+std::ostream &
+operator<<(std::ostream &os, const TimestampedROUTINGData &rdata)
+{
+  os << "t " << rdata.timestamp << std::endl;
+  os << "Tables: " << rdata.route.size() << std::endl;
+  FOREACH(it, rdata.route)
+    {
+      os << it->first << " (" << it->second.size() << ") ";
+      FOREACH(jt, it->second )
+	{
+	  os << "[" << (*jt).endNode << "] ";
+	  os << (*jt).nextHop << " " << +((*jt).weight);
+	  os << std::endl;
+	}
+      os << std::endl;
+    }
+  return os;
+}
+
 ROUTINGDriver::ROUTINGDriver(const char * url, 
                              const string &channel,
-                             bool autorun)
+                             bool handle)
 {
     m_lcm = lcm_create(url); /// Create a new LCM instance
     m_lcmURL = url; /// Set LCM URL
     m_lcmChannel = channel; /// Set LCM channel
-    if (isLCMReady())/// FIXME: better outside?
-    {
-        subscribeToChannel(channel);
-    }
     pthread_mutex_init(&m_mutex, NULL);
-    if( autorun )
-        run();
+    if( handle )
+      {
+	if (isLCMReady())/// FIXME: better outside?
+	  {
+	    subscribeToChannel(channel);
+	  }
+	  run();
+      }
 }
 
 bool
@@ -41,6 +63,57 @@ ROUTINGDriver::data()
     return ret;
 }
 
+void
+ROUTINGDriver::clearData(uint64_t t)
+{
+    pthread_mutex_lock(&m_mutex);
+    m_latestRoutingData.timestamp = t;
+    m_latestRoutingData.route.clear();
+    pthread_mutex_unlock(&m_mutex);  
+}
+
+void
+ROUTINGDriver::addEntry(std::string nid,
+			Entry &entry)
+{
+  pthread_mutex_lock(&m_mutex);
+  m_latestRoutingData.route[nid].push_back(entry);
+  pthread_mutex_unlock(&m_mutex);
+}
+
+
+void
+ROUTINGDriver::publishLCM()
+{
+  pthread_mutex_lock(&m_mutex);
+  route2_tree_t mymsg;
+  //TODO assign timestamp
+  mymsg.timestamp = 0;
+  mymsg.n = m_latestRoutingData.route.size();
+  mymsg.rtable.resize(mymsg.n);
+  int i=0;
+  FOREACH(it, m_latestRoutingData.route)
+    {
+      route2_table_t rtable;
+      rtable.node = it->first;
+      rtable.n = it->second.size();
+      rtable.entries.resize(rtable.n);
+      int j=0;
+      FOREACH(jt, it->second )
+	{
+	  route2_entry_t entry;
+	  entry.dest = (*jt).endNode;
+	  entry.node = (*jt).nextHop;
+	  entry.weight = (*jt).weight;
+	  rtable.entries[j++]=entry;
+	}
+      mymsg.rtable[i++]=rtable;
+    }
+  m_lcm.publish(m_lcmChannel.c_str(), &mymsg);
+}
+
+
+
 /* Converts LCM data to TimestampedROUTINGData */
 void
 ROUTINGDriver::handleMessage(const lcm::ReceiveBuffer* rbuf,
@@ -54,7 +127,8 @@ ROUTINGDriver::handleMessage(const lcm::ReceiveBuffer* rbuf,
     printf("  Received message on channel \"%s\":\n", chan.c_str());
     printf("  timestamp   = %lld\n", (long long)msg->timestamp);
 
-    routingData.timestamp = msg->timestamp;
+    //    routingData.timestamp = msg->timestamp;
+    routingData.timestamp = tt;
     for(int i = 0; i < msg->n; i++)
     { 
         RoutingTable table;
@@ -74,6 +148,8 @@ ROUTINGDriver::handleMessage(const lcm::ReceiveBuffer* rbuf,
     pthread_mutex_lock(&m_mutex);
     m_latestRoutingData = routingData;
     pthread_mutex_unlock(&m_mutex);
+    std::cout << "READ: " << std::endl;
+    std::cout << m_latestRoutingData << std::endl;
 }
 
 /// returns time in milliseconds

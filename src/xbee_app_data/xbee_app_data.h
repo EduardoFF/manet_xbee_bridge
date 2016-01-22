@@ -53,6 +53,12 @@ namespace xbee_app_data
     uint8_t  nbBytes;
   };
 
+    struct __attribute__((__packed__)) RoutingTableHdr
+  {
+    NodeId  nodeId;
+    uint8_t nEntries;
+  };
+    
   struct __attribute__((__packed__)) RoutingEntry
   {
     NodeId  dest;
