@@ -36,6 +36,7 @@ namespace xbee_app_data
   static const char XBEEDATA_ROUTING = 2;
   static const char XBEEDATA_PLAN = 3;
   static const char XBEE_MAX_PAYLOAD_LENGTH = 127;
+  static const uint16_t XBEE_BROADCAST_ADDR = 65535;
 
     struct __attribute__((__packed__)) EndNodeInfo
   {
@@ -43,6 +44,7 @@ namespace xbee_app_data
     float longitude;
     float altitude;
     int dataRate;
+    int lastTabId;
   };
 
   struct __attribute__((__packed__)) Routing

@@ -210,7 +210,7 @@ sendRoutingDataTimerCB(void *arg)
       txInfo.readCCA = false;
 
 #ifndef NO_XBEE_TEST
-      int retval = g_xbee->send(2, txInfo, g_outBuf, buflen);
+      int retval = g_xbee->send(XBEE_BROADCAST_ADDR, txInfo, g_outBuf, buflen);
       if( retval == XbeeInterface::NO_ACK )
 	{
 	  printf("send failed NOACK\n");
@@ -319,12 +319,15 @@ int main(int argc, char * argv[])
 #ifndef NO_XBEE_TEST
   /// create Xbee communication
   g_xbee = new XbeeInterface(xbeePar);
+  if( g_xbee->isOK() )
   /// Listen for messages
-  g_xbee->registerReceive(&receiveData);
+    g_xbee->registerReceive(&receiveData);
+  else
+    return 1;
 #endif
 
   /// create routing Driver
-  g_routingDriver = new ROUTINGDriver("udpm://239.255.76.67:7667?ttl=1", "RNP", true);
+  g_routingDriver = new ROUTINGDriver("udpm://239.255.76.67:7667?ttl=1", "RNP2", true);
 
   // does it need to be modified???
   g_sendRoutingDataTimer = new Timer(TIMER_SECONDS, sendRoutingDataTimerCB, NULL);

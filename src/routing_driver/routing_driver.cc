@@ -88,7 +88,7 @@ ROUTINGDriver::publishLCM()
   pthread_mutex_lock(&m_mutex);
   route2_tree_t mymsg;
   //TODO assign timestamp
-  mymsg.timestamp = 0;
+  mymsg.timestamp = m_latestRoutingData.timestamp;
   mymsg.n = m_latestRoutingData.route.size();
   mymsg.rtable.resize(mymsg.n);
   int i=0;
@@ -110,11 +110,13 @@ ROUTINGDriver::publishLCM()
       mymsg.rtable[i++]=rtable;
     }
   m_lcm.publish(m_lcmChannel.c_str(), &mymsg);
+  pthread_mutex_unlock(&m_mutex);
 }
 
 
 
 /* Converts LCM data to TimestampedROUTINGData */
+// we assign the timestamp of lcm msg reception
 void
 ROUTINGDriver::handleMessage(const lcm::ReceiveBuffer* rbuf,
                              const std::string& chan,

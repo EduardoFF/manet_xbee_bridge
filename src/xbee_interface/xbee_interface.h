@@ -104,11 +104,13 @@ class XbeeInterface
     std::map< uint16_t, MyConnection *> mConn;
     MyConnection *mDefaultCon;
     ReceiveCB mReceiveCB;
+    bool m_ok;
 
     MyConnection *createConnection(uint16_t addr);
     void setup();
     void receive(libxbee::Pkt **pkt);
-    void init();
+    bool init();
+    
 public:
     enum TxStatus{
         NO_ACK,  		//! Tx failed due to missing ack
@@ -140,6 +142,8 @@ public:
    *  is received
    *  */
     void registerReceive(ReceiveCB);
+
+    bool isOK();
 
 };
 #endif

@@ -214,11 +214,23 @@ XbeeInterface::send(uint16_t addr, TxInfo &txPar, const void *data, size_t size)
     }
     std::cout << "\n";
 #endif
-    if( err = con->Tx((const unsigned char *)data, (int) size) )
-      {
-	debug("xbee ret %d", err);
-	log_info("xbee tx returned %d", err);
+    try
+      {  
+	if( err = con->Tx((const unsigned char *)data, (int) size) )
+	  {
+	    debug("xbee ret %d", err);
+	    log_info("xbee tx returned %d", err);
+	  }
       }
+    catch (xbee_err ret)
+      {
+	log_err("xbee exception %d", ret);
+      }
+    catch (...)
+      {
+	log_err("xbee exception ");
+      }
+    
 
     if( restore_settings)
       con->setSettings(&prev_settings);
@@ -229,6 +241,11 @@ XbeeInterface::send(uint16_t addr, TxInfo &txPar, const void *data, size_t size)
       log_err("xbee etx exception err %d retval %d",
 	      etx.ret, etx.retVal);
     }
+  catch (...)
+    {
+      printf("error!\n");
+    }
+
 
   if( txPar.readCCA )
     {
@@ -293,8 +310,16 @@ XbeeInterface::XbeeInterface(const XbeeInterfaceParam &par):
   mParam(par),
   mReceiveCB(NULL)
 {
-  init();
-  
+  if(init())
+    m_ok = false;
+  else
+    m_ok = true;
+}
+
+bool
+XbeeInterface::isOK()
+{
+  return m_ok;
 }
 
 XbeeInterface::XbeeInterface(const char *config_file):
@@ -305,7 +330,7 @@ XbeeInterface::XbeeInterface(const char *config_file):
   init();
 }
 
-void
+bool
 XbeeInterface::init()
 {  
   try {
@@ -323,6 +348,7 @@ XbeeInterface::init()
       std::cout << "\n";
     } catch (xbee_err ret) {
       std::cout << "Error while retrieving connection types...\n";
+      return 1;
     }
 #endif
 
@@ -370,11 +396,13 @@ XbeeInterface::init()
     mConn[0xffff] = createConnection(0xffff);
     printf("Created connection to 0xffff\n");
     fflush(stdout);
-
-
+    return 0;
+    
   } catch (xbee_err ret) {
     log_err("xbee exception %d", ret);
+    return 1;
   }
+  return 1;
 
 }
 

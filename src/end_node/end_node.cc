@@ -43,7 +43,7 @@ getNodeDesc(uint8_t nid)
   if( !nid )
     return "SINK";
   ostringstream ss;
-  ss << "172.16.0." << +nid;
+  ss << "10.42.43." << +nid;
   return ss.str();
 }
 
@@ -135,7 +135,6 @@ receiveData(uint16_t addr, void *data,
       Header header;
       memcpy(&header, data, sizeof(Header));
       cout << "Header: " << +(header.type) << endl;
-
       if (header.type == XBEEDATA_ROUTING )
         {
 	  if(len >= sizeof(Header) + sizeof(Routing))
@@ -144,6 +143,7 @@ receiveData(uint16_t addr, void *data,
 	      memcpy(&route,
 		     (unsigned char *)data + sizeof(Header),
 		     sizeof(Routing));
+	      cout << "TabId: " << +(route.tabId) << endl;
 	      if( route.tabId > g_lastRoutingTableRcv )
 		{
 		  printf("NEW TREE %d\n", route.tabId);
@@ -206,8 +206,9 @@ receiveData(uint16_t addr, void *data,
 		  printf("Read all bytes :)\n");
 		}
 	      printf("NEW FRAGMENT %d\n", route.fragNb);
-	      printf("got %d out of %d\n", route.fragNb, route.nbOfFrag);
 	      g_lastRoutingFragments.insert(route.fragNb);
+	      printf("got %d out of %d\n", g_lastRoutingFragments.size(),
+		     route.nbOfFrag);
 	      g_routingDriver->publishLCM();
 	      if( g_lastRoutingFragments.size() == route.nbOfFrag )
 		{
@@ -236,7 +237,7 @@ int main(int argc, char * argv[])
   GetPot   cl(argc, argv);
   if(cl.search(2, "--help", "-h") ) print_help(cl[0]);
   cl.init_multiple_occurrence();
-  const string  xbeeDev  = cl.follow("/dev/ttyUSB1", "--dev");
+  const string  xbeeDev  = cl.follow("/dev/ttyUSB0", "--dev");
   const int     baudrate    = cl.follow(57600, "--baud");
   const int     nodeId    = cl.follow(2, "--nodeid");
   cl.enable_loop();
@@ -265,7 +266,7 @@ int main(int argc, char * argv[])
   g_gpsDriver = new GPSDriver("udpm://239.255.76.67:7667?ttl=1", "POSE", true);
 
   /// create routing Driver -- we don't need to listen LCM 
-  g_routingDriver = new ROUTINGDriver("udpm://239.255.76.67:7667?ttl=1", "RNP", false);
+  g_routingDriver = new ROUTINGDriver("udpm://239.255.76.67:7667?ttl=1", "RNP2", false);
 
 
   g_endNodeInfoTimer = new Timer(TIMER_SECONDS, endNodeInfoTimerCB, NULL);
