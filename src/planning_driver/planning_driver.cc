@@ -1,26 +1,27 @@
-#include "routing_driver.h"
+#include "planning_driver/planning_driver.h"
 #include <sys/time.h>
 
 #define IT(c) __typeof((c).begin())
 #define FOREACH(i,c) for(__typeof((c).begin()) i=(c).begin();i!=(c).end();++i)
 
-ROUTINGDriver::ROUTINGDriver()
+PLANNINGDriver::PLANNINGDriver()
 {
 }
 
 
 std::ostream &
-operator<<(std::ostream &os, const TimestampedROUTINGData &rdata)
+operator<<(std::ostream &os, const TimestampedPLANNINGData &rdata)
 {
     os << "t " << rdata.timestamp << std::endl;
-    os << "Tables: " << rdata.route.size() << std::endl;
-    FOREACH(it, rdata.route)
+    os << "Tables: " << rdata.plan.size() << std::endl;
+    FOREACH(it, rdata.plan)
     {
         os << it->first << " (" << it->second.size() << ") ";
         FOREACH(jt, it->second )
         {
-            os << "[" << (*jt).endNode << "] ";
-            os << (*jt).nextHop << " " << +((*jt).weight);
+            os << "[" << (*jt).latitude << (*jt).longitude << (*jt).altitude << "] ";
+            os << (*jt).action << " " << (*jt).option;
+            os << (*jt).timestamp;
             os << std::endl;
         }
         os << std::endl;
@@ -28,9 +29,9 @@ operator<<(std::ostream &os, const TimestampedROUTINGData &rdata)
     return os;
 }
 
-ROUTINGDriver::ROUTINGDriver(const char * url, 
-                             const string &channel,
-                             bool handle)
+PLANNINGDriver::PLANNINGDriver(const char * url,
+                               const string &channel,
+                               bool handle)
 {
     m_lcm = lcm_create(url); /// Create a new LCM instance
     m_lcmURL = url; /// Set LCM URL
@@ -47,64 +48,67 @@ ROUTINGDriver::ROUTINGDriver(const char * url,
 }
 
 bool
-ROUTINGDriver::run()
+PLANNINGDriver::run()
 {
     int status = pthread_create(&m_thread, NULL, internalThreadEntryFunc, this);
     return (status == 0);
 }
 
 /// lock, copy, unlock, return
-TimestampedROUTINGData
-ROUTINGDriver::data()
+TimestampedPLANNINGData
+PLANNINGDriver::data()
 {
     pthread_mutex_lock(&m_mutex);
-    TimestampedROUTINGData ret( m_latestRoutingData );
+    TimestampedPLANNINGData ret( m_latestPlanningData );
     pthread_mutex_unlock(&m_mutex);
     return ret;
 }
 
 void
-ROUTINGDriver::clearData(uint64_t t)
+PLANNINGDriver::clearData(uint64_t t)
 {
     pthread_mutex_lock(&m_mutex);
-    m_latestRoutingData.timestamp = t;
-    m_latestRoutingData.route.clear();
+    m_latestPlanningData.timestamp = t;
+    m_latestPlanningData.plan.clear();
     pthread_mutex_unlock(&m_mutex);
 }
 
 void
-ROUTINGDriver::addEntry(std::string nid,
-                        Entry &entry)
+PLANNINGDriver::addEntry(std::string nid,
+                         EntryP &entry)
 {
     pthread_mutex_lock(&m_mutex);
-    m_latestRoutingData.route[nid].push_back(entry);
+    m_latestPlanningData.plan[nid].push_back(entry);
     pthread_mutex_unlock(&m_mutex);
 }
 
 
 void
-ROUTINGDriver::publishLCM()
+PLANNINGDriver::publishLCM()
 {
     pthread_mutex_lock(&m_mutex);
-    route2_tree_t mymsg;
+    plan2_tree_t mymsg;
     //TODO assign timestamp
-    mymsg.timestamp = m_latestRoutingData.timestamp;
-    mymsg.n = m_latestRoutingData.route.size();
+    mymsg.timestamp = m_latestPlanningData.timestamp;
+    mymsg.n = m_latestPlanningData.plan.size();
     mymsg.rtable.resize(mymsg.n);
     int i=0;
-    FOREACH(it, m_latestRoutingData.route)
+    FOREACH(it, m_latestPlanningData.plan)
     {
-        route2_table_t rtable;
+        plan2_table_t rtable;
         rtable.node = it->first;
         rtable.n = it->second.size();
         rtable.entries.resize(rtable.n);
         int j=0;
         FOREACH(jt, it->second )
         {
-            route2_entry_t entry;
-            entry.dest = (*jt).endNode;
-            entry.node = (*jt).nextHop;
-            entry.weight = (*jt).weight;
+            plan2_entry_t entry;
+            entry.latitude  = (*jt).latitude;
+            entry.longitude = (*jt).longitude;
+            entry.altitude  = (*jt).altitude;
+            entry.action    = (*jt).action;
+            entry.option    = (*jt).option;
+            entry.timestamp = (*jt).timestamp;
             rtable.entries[j++]=entry;
         }
         mymsg.rtable[i++]=rtable;
@@ -113,50 +117,51 @@ ROUTINGDriver::publishLCM()
     pthread_mutex_unlock(&m_mutex);
 }
 
-
-
 /* Converts LCM data to TimestampedROUTINGData */
 // we assign the timestamp of lcm msg reception
 void
-ROUTINGDriver::handleMessage(const lcm::ReceiveBuffer* rbuf,
-                             const std::string& chan,
-                             const route2_tree_t* msg)
+PLANNINGDriver::handleMessage(const lcm::ReceiveBuffer* rbuf,
+                              const std::string& chan,
+                              const plan2_tree_t* msg)
 {
     uint64_t tt = getTime();
-    TimestampedROUTINGData routingData;
+    TimestampedPLANNINGData planningData;
 
-    printf("ROUTINGDriver: [%lld] got config \n", (long long)tt);
+    printf("PLANNINGDriver: [%lld] got config \n", (long long)tt);
     printf("  Received message on channel \"%s\":\n", chan.c_str());
     printf("  timestamp   = %lld\n", (long long)msg->timestamp);
 
-    //    routingData.timestamp = msg->timestamp;
-    routingData.timestamp = tt;
+    //    planningData.timestamp = msg->timestamp;
+    planningData.timestamp = tt;
     for(int i = 0; i < msg->n; i++)
     {
-        RoutingTable table;
-        string nodeID = msg->rtable[i].node;
+        PlanningTable table;
+        string nodeID = msg->rtable[i].node; // maybe change name of nodeID
         int nbEntry = msg->rtable[i].n;
 
         for(int j = 0; j < nbEntry; j++)
         {
-            Entry entry;
-            entry.endNode = msg->rtable[i].entries[j].dest;
-            entry.nextHop = msg->rtable[i].entries[j].node;
-            entry.weight = msg->rtable[i].entries[j].weight;
+            EntryP entry;
+            entry.latitude = msg->rtable[i].entries[j].latitude;
+            entry.longitude = msg->rtable[i].entries[j].longitude;
+            entry.altitude = msg->rtable[i].entries[j].altitude;
+            entry.action = msg->rtable[i].entries[j].action;
+            entry.option = msg->rtable[i].entries[j].option;
+            entry.timestamp = msg->rtable[i].entries[j].timestamp;
             table.push_back(entry);
         }
-        routingData.route[nodeID] = table;
+        planningData.plan[nodeID] = table;
     }
     pthread_mutex_lock(&m_mutex);
-    m_latestRoutingData = routingData;
+    m_latestPlanningData = planningData;
     pthread_mutex_unlock(&m_mutex);
     std::cout << "READ: " << std::endl;
-    std::cout << m_latestRoutingData << std::endl;
+    std::cout << m_latestPlanningData << std::endl;
 }
 
 /// returns time in milliseconds
 uint64_t
-ROUTINGDriver::getTime()
+PLANNINGDriver::getTime()
 {
     struct timeval timestamp;
     gettimeofday(&timestamp, NULL);
@@ -171,7 +176,7 @@ ROUTINGDriver::getTime()
 }
 
 std::string
-ROUTINGDriver::getTimeStr()
+PLANNINGDriver::getTimeStr()
 {
     char buffer [80];
     timeval curTime;
@@ -184,8 +189,8 @@ ROUTINGDriver::getTimeStr()
     return ctime_str;
 }
 
-inline bool 
-ROUTINGDriver::isLCMReady() 
+inline bool
+PLANNINGDriver::isLCMReady()
 {
     if (!m_lcm.good())
     {
@@ -199,21 +204,19 @@ ROUTINGDriver::isLCMReady()
     }
 }
 
-inline void 
-ROUTINGDriver::subscribeToChannel(const string & channel)
+inline void
+PLANNINGDriver::subscribeToChannel(const string & channel)
 {
     printf("Listening to channel %s\n", channel.c_str());
-    m_lcm.subscribe(channel, &ROUTINGDriver::handleMessage, this);
+    m_lcm.subscribe(channel, &PLANNINGDriver::handleMessage, this);
 }
 
 void
-ROUTINGDriver::internalThreadEntry()
+PLANNINGDriver::internalThreadEntry()
 {
     while (true)
     {
         m_lcm.handle();
     }
 }
-
-
 

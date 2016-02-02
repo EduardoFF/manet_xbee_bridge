@@ -18,6 +18,7 @@ add_executable(end_node ${EndNode_IMPLEMENTATIONS})
 target_link_libraries(end_node
   gps_driver
   routing_driver
+  planning_driver
   xbee_interface
   xbee_app_data
   timer

@@ -1,6 +1,7 @@
+package rnp;
 struct route2_entry_t
-{      
-       string dest;
-       string  node;
-       int16_t weight;     
+{
+    string dest;	
+    string  node;
+    int16_t weight;   
 }

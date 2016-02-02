@@ -25,63 +25,85 @@
 #include <iostream>
 #include <unistd.h>
 #include "route2_table_t.hpp"
+#include "plan2_table_t.hpp"
 
 //#include "tree.h"
 namespace xbee_app_data
 {
-  typedef struct Packet Packet;
-  typedef uint8_t NodeId;
 
-  static const char XBEEDATA_ENDNODEINFO = 1;
-  static const char XBEEDATA_ROUTING = 2;
-  static const char XBEEDATA_PLAN = 3;
-  static const char XBEE_MAX_PAYLOAD_LENGTH = 127;
-  static const uint16_t XBEE_BROADCAST_ADDR = 65535;
+    typedef struct Packet Packet;
+    typedef uint8_t NodeId;
+
+    static const char XBEEDATA_ENDNODEINFO  = 1;
+    static const char XBEEDATA_ROUTING      = 2;
+    static const char XBEEDATA_PLANNING     = 3;
+    static const char XBEE_MAX_PAYLOAD_LENGTH   = 127;
+    static const uint16_t XBEE_BROADCAST_ADDR   = 65535;
 
     struct __attribute__((__packed__)) EndNodeInfo
-  {
-    float latitude;
-    float longitude;
-    float altitude;
-    int dataRate;
-    int lastTabId;
-  };
+    {
+        float latitude;
+        float longitude;
+        float altitude;
+        int dataRate;
+        int lastTabId;
+    };
 
-  struct __attribute__((__packed__)) Routing
-  {
-    uint16_t tabId;
-    uint8_t  fragNb;
-    uint8_t  nbOfFrag;
-    uint8_t  nbBytes;
-  };
+    struct __attribute__((__packed__)) Routing
+    {
+        uint16_t tabId;
+        uint8_t  fragNb;
+        uint8_t  nbOfFrag;
+        uint8_t  nbBytes;
+    };
 
     struct __attribute__((__packed__)) RoutingTableHdr
-  {
-    NodeId  nodeId;
-    uint8_t nEntries;
-  };
-    
-  struct __attribute__((__packed__)) RoutingEntry
-  {
-    NodeId  dest;
-    NodeId  nextHop;
-    uint8_t weight;
-  };
+    {
+        NodeId  nodeId;
+        uint8_t nEntries;
+    };
 
-  struct __attribute__((__packed__)) Plan
-  {
-    int plan;
-  };
+    struct __attribute__((__packed__)) RoutingEntry
+    {
+        NodeId  dest;
+        NodeId  nextHop;
+        uint8_t weight;
+    };
 
-  struct __attribute__((__packed__)) Header
-  {
-    char type;
-  };
+    struct __attribute__((__packed__)) Planning
+    {
+        uint16_t tabId;
+        uint8_t  fragNb;
+        uint8_t  nbOfFrag;
+        uint8_t  nbBytes;
+    };
+
+    struct __attribute__((__packed__)) PlanningTableHdr
+    {
+        NodeId  nodeId;
+        uint8_t nEntries;
+    };
+
+    struct __attribute__((__packed__)) PlanningEntry
+    {
+        float latitude;
+        float longitude;
+        float altitude;
+        std::string action;
+        std::string option;
+        uint64_t timestamp;
+    };
+
+    struct __attribute__((__packed__)) Header
+    {
+        char type;
+    };
+
 };
 
 std::ostream &operator<<(std::ostream &os, const xbee_app_data::EndNodeInfo &);
 std::ostream &operator<<(std::ostream &os, const xbee_app_data::Routing &);
-std::ostream &operator<<(std::ostream &os, const xbee_app_data::Plan &);
+std::ostream &operator<<(std::ostream &os, const xbee_app_data::Planning &);
 std::ostream &operator<<(std::ostream &os, const xbee_app_data::Header &);
 
 #endif

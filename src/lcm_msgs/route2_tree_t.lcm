@@ -1,4 +1,4 @@
-package rnp;
+
 struct route2_tree_t
 {
     int64_t  timestamp;

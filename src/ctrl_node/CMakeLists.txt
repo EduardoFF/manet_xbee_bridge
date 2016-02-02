@@ -22,6 +22,7 @@ target_link_libraries(ctrl_node
   pthread
   lcm
   routing_driver
+  planning_driver
   gps_driver
 #  xbeep.a
 #  xbee.a

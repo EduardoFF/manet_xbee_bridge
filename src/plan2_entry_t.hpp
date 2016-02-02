@@ -6,21 +6,26 @@
 
 #include <lcm/lcm_coretypes.h>
 
-#ifndef __route2_tree_t_hpp__
-#define __route2_tree_t_hpp__
+#ifndef __plan2_entry_t_hpp__
+#define __plan2_entry_t_hpp__
 
-#include <vector>
-#include "route2_table_t.hpp"
+#include <string>
 
 
-class route2_tree_t
+class plan2_entry_t
 {
     public:
-        int64_t    timestamp;
+        float      latitude;
 
-        int32_t    n;
+        float      longitude;
 
-        std::vector< route2_table_t > rtable;
+        float      altitude;
+
+        std::string action;
+
+        std::string option;
+
+        int16_t    timestamp;
 
     public:
         /**
@@ -58,7 +63,7 @@ class route2_tree_t
         inline static int64_t getHash();
 
         /**
-         * Returns "route2_tree_t"
+         * Returns "plan2_entry_t"
          */
         inline static const char* getTypeName();
 
@@ -69,7 +74,7 @@ class route2_tree_t
         inline static uint64_t _computeHash(const __lcm_hash_ptr *p);
 };
 
-int route2_tree_t::encode(void *buf, int offset, int maxlen) const
+int plan2_entry_t::encode(void *buf, int offset, int maxlen) const
 {
     int pos = 0, tlen;
     int64_t hash = (int64_t)getHash();
@@ -83,7 +88,7 @@ int route2_tree_t::encode(void *buf, int offset, int maxlen) const
     return pos;
 }
 
-int route2_tree_t::decode(const void *buf, int offset, int maxlen)
+int plan2_entry_t::decode(const void *buf, int offset, int maxlen)
 {
     int pos = 0, thislen;
 
@@ -98,81 +103,97 @@ int route2_tree_t::decode(const void *buf, int offset, int maxlen)
     return pos;
 }
 
-int route2_tree_t::getEncodedSize() const
+int plan2_entry_t::getEncodedSize() const
 {
     return 8 + _getEncodedSizeNoHash();
 }
 
-int64_t route2_tree_t::getHash()
+int64_t plan2_entry_t::getHash()
 {
     static int64_t hash = _computeHash(NULL);
     return hash;
 }
 
-const char* route2_tree_t::getTypeName()
+const char* plan2_entry_t::getTypeName()
 {
-    return "route2_tree_t";
+    return "plan2_entry_t";
 }
 
-int route2_tree_t::_encodeNoHash(void *buf, int offset, int maxlen) const
+int plan2_entry_t::_encodeNoHash(void *buf, int offset, int maxlen) const
 {
     int pos = 0, tlen;
 
-    tlen = __int64_t_encode_array(buf, offset + pos, maxlen - pos, &this->timestamp, 1);
+    tlen = __float_encode_array(buf, offset + pos, maxlen - pos, &this->latitude, 1);
     if(tlen < 0) return tlen; else pos += tlen;
 
-    tlen = __int32_t_encode_array(buf, offset + pos, maxlen - pos, &this->n, 1);
+    tlen = __float_encode_array(buf, offset + pos, maxlen - pos, &this->longitude, 1);
     if(tlen < 0) return tlen; else pos += tlen;
 
-    for (int a0 = 0; a0 < this->n; a0++) {
-        tlen = this->rtable[a0]._encodeNoHash(buf, offset + pos, maxlen - pos);
-        if(tlen < 0) return tlen; else pos += tlen;
-    }
+    tlen = __float_encode_array(buf, offset + pos, maxlen - pos, &this->altitude, 1);
+    if(tlen < 0) return tlen; else pos += tlen;
+
+    char* action_cstr = (char*) this->action.c_str();
+    tlen = __string_encode_array(buf, offset + pos, maxlen - pos, &action_cstr, 1);
+    if(tlen < 0) return tlen; else pos += tlen;
+
+    char* option_cstr = (char*) this->option.c_str();
+    tlen = __string_encode_array(buf, offset + pos, maxlen - pos, &option_cstr, 1);
+    if(tlen < 0) return tlen; else pos += tlen;
+
+    tlen = __int16_t_encode_array(buf, offset + pos, maxlen - pos, &this->timestamp, 1);
+    if(tlen < 0) return tlen; else pos += tlen;
 
     return pos;
 }
 
-int route2_tree_t::_decodeNoHash(const void *buf, int offset, int maxlen)
+int plan2_entry_t::_decodeNoHash(const void *buf, int offset, int maxlen)
 {
     int pos = 0, tlen;
 
-    tlen = __int64_t_decode_array(buf, offset + pos, maxlen - pos, &this->timestamp, 1);
+    tlen = __float_decode_array(buf, offset + pos, maxlen - pos, &this->latitude, 1);
     if(tlen < 0) return tlen; else pos += tlen;
 
-    tlen = __int32_t_decode_array(buf, offset + pos, maxlen - pos, &this->n, 1);
+    tlen = __float_decode_array(buf, offset + pos, maxlen - pos, &this->longitude, 1);
     if(tlen < 0) return tlen; else pos += tlen;
 
-    this->rtable.resize(this->n);
-    for (int a0 = 0; a0 < this->n; a0++) {
-        tlen = this->rtable[a0]._decodeNoHash(buf, offset + pos, maxlen - pos);
-        if(tlen < 0) return tlen; else pos += tlen;
-    }
+    tlen = __float_decode_array(buf, offset + pos, maxlen - pos, &this->altitude, 1);
+    if(tlen < 0) return tlen; else pos += tlen;
+
+    int32_t __action_len__;
+    tlen = __int32_t_decode_array(buf, offset + pos, maxlen - pos, &__action_len__, 1);
+    if(tlen < 0) return tlen; else pos += tlen;
+    if(__action_len__ > maxlen - pos) return -1;
+    this->action.assign(((const char*)buf) + offset + pos, __action_len__ - 1);
+    pos += __action_len__;
+
+    int32_t __option_len__;
+    tlen = __int32_t_decode_array(buf, offset + pos, maxlen - pos, &__option_len__, 1);
+    if(tlen < 0) return tlen; else pos += tlen;
+    if(__option_len__ > maxlen - pos) return -1;
+    this->option.assign(((const char*)buf) + offset + pos, __option_len__ - 1);
+    pos += __option_len__;
+
+    tlen = __int16_t_decode_array(buf, offset + pos, maxlen - pos, &this->timestamp, 1);
+    if(tlen < 0) return tlen; else pos += tlen;
 
     return pos;
 }
 
-int route2_tree_t::_getEncodedSizeNoHash() const
+int plan2_entry_t::_getEncodedSizeNoHash() const
 {
     int enc_size = 0;
-    enc_size += __int64_t_encoded_array_size(NULL, 1);
-    enc_size += __int32_t_encoded_array_size(NULL, 1);
-    for (int a0 = 0; a0 < this->n; a0++) {
-        enc_size += this->rtable[a0]._getEncodedSizeNoHash();
-    }
+    enc_size += __float_encoded_array_size(NULL, 1);
+    enc_size += __float_encoded_array_size(NULL, 1);
+    enc_size += __float_encoded_array_size(NULL, 1);
+    enc_size += this->action.size() + 4 + 1;
+    enc_size += this->option.size() + 4 + 1;
+    enc_size += __int16_t_encoded_array_size(NULL, 1);
     return enc_size;
 }
 
-uint64_t route2_tree_t::_computeHash(const __lcm_hash_ptr *p)
+uint64_t plan2_entry_t::_computeHash(const __lcm_hash_ptr *)
 {
-    const __lcm_hash_ptr *fp;
-    for(fp = p; fp != NULL; fp = fp->parent)
-        if(fp->v == route2_tree_t::getHash)
-            return 0;
-    const __lcm_hash_ptr cp = { p, (void*)route2_tree_t::getHash };
-
-    uint64_t hash = 0x429a3807c1b0e08aLL +
-         route2_table_t::_computeHash(&cp);
-
+    uint64_t hash = 0xa1177897013cc305LL;
     return (hash<<1) + ((hash>>63)&1);
 }
 

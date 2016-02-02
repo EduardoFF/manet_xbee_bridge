@@ -5,7 +5,7 @@ using namespace std;
 
 ostream &operator<<(ostream &os, const EndNodeInfo &info)
 {
-  os << "lat: " << info.latitude
+  os << " lat: " << info.latitude
      << " lon: " << info.longitude
      << " altitude " << info.altitude
      << " datarate " << info.dataRate;

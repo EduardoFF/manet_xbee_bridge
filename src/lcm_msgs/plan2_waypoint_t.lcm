@@ -1,0 +1,7 @@
+package rnp;
+struct plan2_waypoint_t
+{
+    float  latitude;	
+    float  longitude;
+    float  altitude;   
+}

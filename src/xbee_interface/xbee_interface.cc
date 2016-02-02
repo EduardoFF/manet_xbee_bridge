@@ -105,7 +105,7 @@ setParameter(libxbee::Con *con, std::string par, uint32_t val, uint8_t nbytes)
       cmd[par.size()+(nbytes-i-1)]=(unsigned char)b[i];
     }
   cmd[par.size()+nbytes] = '\0';
-  debug("sending cmd <%s> size %d", cmd, par.size()+nbytes);
+  debug("sending cmd <%s> size %ld", cmd, par.size()+nbytes);
   con->Tx((const unsigned char *)cmd, par.size()+nbytes);
 }
 
@@ -200,7 +200,7 @@ XbeeInterface::send(uint16_t addr, TxInfo &txPar, const void *data, size_t size)
 	}
     }
 
-    debug("Trying to transmit data packet to %d of size %d", 
+    debug("Trying to transmit data packet to %d of size %ld",
 	  addr, size);
 #ifndef NDEBUG
     unsigned char *cdata = (unsigned char *)data;
@@ -253,7 +253,7 @@ XbeeInterface::send(uint16_t addr, TxInfo &txPar, const void *data, size_t size)
       debug("requesting EC");
       (*mATCon) << "EC";
       (*mATCon) >> ret_data;
-      debug("got EC response - size %d", ret_data.size());
+      debug("got EC response - size %ld", ret_data.size());
       uint16_t ec = 0xffff;
       if( ret_data.size() == 2)
 	{

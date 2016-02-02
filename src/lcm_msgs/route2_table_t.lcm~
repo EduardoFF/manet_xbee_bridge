@@ -1,3 +1,4 @@
+package rnp;
 struct route2_table_t
 {
     string node;
