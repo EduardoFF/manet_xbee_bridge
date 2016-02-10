@@ -4,7 +4,7 @@
 
 class GPSDClient {
   public:
-    GPSDClient(gpsmm *gps, bool use_gps_time, bool check_fix_by_variance);
+    GPSDClient();
 
     bool start();
     void step();

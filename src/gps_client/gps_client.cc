@@ -1,7 +1,8 @@
 #include "gps_client.h"
 #include <sys/time.h>
 
-GPSDClient::GPSDClient(gpsmm *gps, bool use_gps_time, bool check_fix_by_variance) : m_gps(NULL), m_use_gps_time(true), m_check_fix_by_variance(true) {}
+GPSDClient::GPSDClient()
+  : m_gps(NULL), m_use_gps_time(true), m_check_fix_by_variance(true) {}
 
 bool 
 GPSDClient::start() 

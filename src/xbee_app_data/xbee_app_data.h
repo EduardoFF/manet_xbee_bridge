@@ -89,8 +89,8 @@ namespace xbee_app_data
         float latitude;
         float longitude;
         float altitude;
-        std::string action;
-        std::string option;
+	std::string action;
+	std::string option;
         uint64_t timestamp;
     };
 
