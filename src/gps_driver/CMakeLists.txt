@@ -7,7 +7,6 @@ set(gpsdriver_IMPLEMENTATIONS
   gps_driver.cc
 )
 
-
 add_library(gps_driver ${gpsdriver_IMPLEMENTATIONS})
 
 target_link_libraries(gps_driver)

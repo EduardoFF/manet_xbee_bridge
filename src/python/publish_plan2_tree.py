@@ -53,13 +53,26 @@ def readFromCmdline(args):
         m = int(args[i])
         i+=1
         while m:
-            dest=args[i]		/* To be modified*/
-            i+=1
-            w = int(args[i])		/* To be modified*/
-            i+=1
-            rt.append( (dest,w) )	/* To be modified*/
-            m-=1
-        plTree.append((node, rt))	/* To be modified*/
+           latitude = args[i]
+	   i+=1
+	   longitude = args[i]
+	   i+=1
+	   altitude = args[i]
+	   i+=1
+	   action = args[i]
+	   i+=1
+	   option = args[i]
+	   i+=1
+	   timestamp = args[i]
+	   i+=1
+
+		# dest=args[i]		
+      		# i+=1
+          	#  w = int(args[i])		
+          	#  i+=1
+           rt.append( (latitude,longitude, altitude, action, option , timestamp) )	
+           m-=1
+        plTree.append((node, rt))	
 
 parser = OptionParser()
 parser.add_option("-f", "--file", dest="filename",
@@ -88,17 +101,18 @@ msg.n = len(plTree)
 rtables=list()
 for (node, rtable) in plTree:
     rt = plan2_table_t()
-    rt.node = node		/* To be modified*/
+    rt.node = node		
     rt.n = len(rtable)
     entries=list()
-    for (nh,w) in rtable:
+    for (latitude,longitude, altitude, action, option , timestamp) in rtable:
         re = plan2_entry_t()
-        re.latitude = 		/* To be modified*/
-
-	re.dest = "SINK"	/* To be modified*/
-        re.node = nh		/* To be modified*/
-        re.weight = w		/* To be modified*/
-        entries.append(re)	/* To be modified*/
+        re.latitude = latitude		
+	re.longitude = longitude
+	re.altitude = altitude		
+        re.action = action		       
+	re.option = option		
+        re.timestamp = timestamp
+	entries.append(re)	
     rt.entries = entries	
     rtables.append(rt)		
 

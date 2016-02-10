@@ -28,6 +28,8 @@
 #include <strings.h>
 #include <set>
 #include <string>
+#include <libgpsmm.h>
+#include <cmath>
 #include <sstream>
 #include <fstream>
 #include <sys/socket.h>
@@ -36,6 +38,8 @@
 #include <lcm/lcm-cpp.hpp>
 #include <pthread.h>
 #include "pose_t.hpp"
+
+
 using namespace std;
 
 struct TimestampedGPSData
@@ -61,6 +65,7 @@ class GPSDriver
 public:
     GPSDriver();
     GPSDriver(const char * url, const string &channel, bool autorun);
+    GPSDriver(gpsmm *gps, bool use_gps_time, bool check_fix_by_variance);
 
     bool run();
 
@@ -68,7 +73,12 @@ public:
                        const std::string& chan,
                        const pose_t* msg);
 
+    bool start();
+    void step();
+    void stop();
+
     TimestampedGPSData data();
+
 private:
     static uint64_t getTime();
     static std::string getTimeStr();
@@ -77,6 +87,10 @@ private:
     const char * m_lcmURL;
     string m_lcmChannel;
     lcm::LCM m_lcm;
+
+    gpsmm *m_gps;
+    bool m_use_gps_time;
+    bool m_check_fix_by_variance;
 
     pthread_mutex_t m_mutex; /** Mutex to control the access to member variables **/
     pthread_t m_thread;     /** Thread **/
@@ -88,7 +102,15 @@ private:
         (( GPSDriver *) ptr)->internalThreadEntry();
         return NULL;
     }
+
     void internalThreadEntry();
+
+    void process_data(struct gps_data_t* p);
+
+    void process_data_gps(struct gps_data_t* p);
+
+    void process_data_navsat(struct gps_data_t* p);
+
 };
 
 #endif

@@ -11,9 +11,6 @@
 
 using namespace std;
 
-
-//#define NO_XBEE_TEST
-
 #ifndef NO_XBEE_TEST
 XbeeInterface *g_xbee;
 #endif
@@ -24,7 +21,6 @@ GPSDriver *g_gpsDriver;
 Timer *g_endNodeInfoTimer;
 char g_outBuf[130];
 bool g_abort;
-
 
 uint16_t g_lastRoutingTableRcv = 0;
 std::set<uint8_t> g_lastRoutingFragments;
@@ -40,7 +36,6 @@ void print_help(const string Application)
 
 /// mutex for sending one packet at a time
 pthread_mutex_t g_sendMutex;
-
 
 std::string
 getNodeDesc(uint8_t nid)
@@ -70,7 +65,7 @@ endNodeInfoTimerCB(void *arg)
     hdr.type = XBEEDATA_ENDNODEINFO;
     memcpy(g_outBuf, &hdr, sizeof(Header));
 
-    // make payload
+    /// make payload
     EndNodeInfo eInfo;
     TimestampedGPSData gpsData = g_gpsDriver->data();
     eInfo.latitude  = gpsData.lat;
@@ -81,8 +76,9 @@ endNodeInfoTimerCB(void *arg)
     memcpy(g_outBuf+sizeof(Header), &eInfo, sizeof(EndNodeInfo));
     size_t buflen = sizeof(Header) + sizeof(EndNodeInfo);
     XbeeInterface::TxInfo txInfo;
-    txInfo.reqAck = false;
+    txInfo.reqAck  = false;
     txInfo.readCCA = false;
+
 #ifndef NO_XBEE_TEST
     int retval = g_xbee->send(1, txInfo, g_outBuf, buflen);
     if( retval == XbeeInterface::NO_ACK )
@@ -169,7 +165,7 @@ receiveData(uint16_t addr, void *data,
                 size_t bcnt = sizeof(Header) + sizeof(Routing);
                 if( len != bcnt + route.nbBytes )
                 {
-                    fprintf(stderr, "Incorrect buffer length (%u) should be %u\n",
+                    fprintf(stderr, "Incorrect buffer length (%lu) should be %lu\n",
                             len, sizeof(Header) + sizeof(Routing) + route.nbBytes);
                     return;
                 }
@@ -212,7 +208,7 @@ receiveData(uint16_t addr, void *data,
                 }
                 printf("NEW FRAGMENT %d\n", route.fragNb);
                 g_lastRoutingFragments.insert(route.fragNb);
-                printf("got %d out of %d\n", g_lastRoutingFragments.size(),
+                printf("got %ld out of %d\n", g_lastRoutingFragments.size(),
                        route.nbOfFrag);
                 g_routingDriver->publishLCM();
                 if( g_lastRoutingFragments.size() == route.nbOfFrag )
@@ -255,7 +251,7 @@ receiveData(uint16_t addr, void *data,
                 size_t bcnt = sizeof(Header) + sizeof(Planning);
                 if( len != bcnt + plan.nbBytes )
                 {
-                    fprintf(stderr, "Incorrect buffer length (%u) should be %u\n",
+                    fprintf(stderr, "Incorrect buffer length (%lu) should be %lu\n",
                             len, sizeof(Header) + sizeof(Planning) + plan.nbBytes);
                     return;
                 }
@@ -301,7 +297,7 @@ receiveData(uint16_t addr, void *data,
                 }
                 printf("NEW FRAGMENT %d\n", plan.fragNb);
                 g_lastPlanningFragments.insert(plan.fragNb);
-                printf("got %d out of %d\n", g_lastPlanningFragments.size(),
+                printf("got %ld out of %d\n", g_lastPlanningFragments.size(),
                        plan.nbOfFrag);
                 g_planningDriver->publishLCM();
                 if( g_lastPlanningFragments.size() == plan.nbOfFrag )
@@ -318,30 +314,30 @@ receiveData(uint16_t addr, void *data,
     cout << "-----------------------" << endl;
 }
 
-
 /////////////// Beginning of Main program //////////////////
 int main(int argc, char * argv[])
 {
 
     g_abort = false;
+
     /// register signal
     signal(SIGINT, signalHandler);
 
-    // Simple Command line parser
+    /// Simple Command line parser
     GetPot   cl(argc, argv);
     if(cl.search(2, "--help", "-h") ) print_help(cl[0]);
     cl.init_multiple_occurrence();
     const string  xbeeDev  = cl.follow("/dev/ttyUSB0", "--dev");
-    const int     baudrate    = cl.follow(57600, "--baud");
-    const int     nodeId    = cl.follow(2, "--nodeid");
+    const int     baudrate = cl.follow(57600, "--baud");
+    const int     nodeId   = cl.follow(2, "--nodeid");
     cl.enable_loop();
 
     XbeeInterfaceParam xbeePar;
-    xbeePar.SourceAddress = nodeId;
-    xbeePar.brate = baudrate;
-    xbeePar.mode  = "xbee1";
-    xbeePar.Device = xbeeDev;
-    xbeePar.writeParams = false;
+    xbeePar.SourceAddress   = nodeId;
+    xbeePar.brate           = baudrate;
+    xbeePar.mode            = "xbee1";
+    xbeePar.Device          = xbeeDev;
+    xbeePar.writeParams     = false;
 
     /// create mutexes
     if (pthread_mutex_init(&g_sendMutex, NULL) != 0)
