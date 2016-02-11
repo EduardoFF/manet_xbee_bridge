@@ -3,11 +3,10 @@
 #define IT(c) __typeof((c).begin())
 #define FOREACH(i,c) for(__typeof((c).begin()) i=(c).begin();i!=(c).end();++i)
 
-GPSDriver::GPSDriver()
-{
-}
 
-GPSDriver::GPSDriver(const char * url,const string &channel,bool autorun)
+
+GPSDriver::GPSDriver(const char * url,const string &channel,bool autorun):
+  m_uselcm(true)
 {
   /// Create a new LCM instance
   m_lcm = lcm_create(url);
@@ -25,6 +24,21 @@ GPSDriver::GPSDriver(const char * url,const string &channel,bool autorun)
     run();
 }
 
+GPSDriver::GPSDriver(bool autorun):
+  m_uselcm(false)
+{
+  pthread_mutex_init(&m_mutex, NULL);
+  if( m_gpsdClient.start())
+    {
+      fprintf(stderr, "gpsd client could not start!\n");
+      m_gpsdOk=false;
+    }
+  else
+    m_gpsdOk = true;
+    
+  if( autorun )
+    run();
+}
 
 bool
 GPSDriver::run()
@@ -114,7 +128,20 @@ void
 GPSDriver::internalThreadEntry()
 {
   while (true)
-  {
-    m_lcm.handle();
+    {
+      
+    if( m_uselcm )
+      {
+	m_lcm.handle();
+      }
+    else
+      {
+	if( m_gpsdOk )
+	  {
+	    printf("doing gpsd ...\n");
+	    m_gpsdClient.step();
+	  }
+	/// or gpsd client
+      }
   }
 }

@@ -5,6 +5,8 @@
 class GPSDClient {
   public:
     GPSDClient();
+    double m_time, m_latitude,
+      m_longitude, m_altitude;
 
     bool start();
     void step();

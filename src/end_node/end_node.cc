@@ -330,6 +330,7 @@ int main(int argc, char * argv[])
     const string  xbeeDev  = cl.follow("/dev/ttyUSB0", "--dev");
     const int     baudrate = cl.follow(57600, "--baud");
     const int     nodeId   = cl.follow(2, "--nodeid");
+    const bool    use_gpsd   = cl.follow(false, "--use-gpsd");
     cl.enable_loop();
 
     XbeeInterfaceParam xbeePar;
@@ -352,9 +353,18 @@ int main(int argc, char * argv[])
     g_xbee->registerReceive(&receiveData);
 #endif
 
-    /// create gpsDriver connection
-    g_gpsDriver = new GPSDriver("udpm://239.255.76.67:7667?ttl=1", "POSE", true);
-
+    if( use_gpsd )
+      {
+	printf("USING GPSD\n");
+	/// create gpsDriver connection
+	g_gpsDriver = new GPSDriver(true);
+      }
+    else
+      {
+	/// create gpsDriver connection
+	g_gpsDriver = new GPSDriver("udpm://239.255.76.67:7667?ttl=1", "POSE", true);
+      }
+	
     /// create routing Driver -- we don't need to listen LCM
     g_routingDriver = new ROUTINGDriver("udpm://239.255.76.67:7667?ttl=1", "RNP2", false);
 

@@ -38,7 +38,7 @@
 #include <lcm/lcm-cpp.hpp>
 #include <pthread.h>
 #include "pose_t.hpp"
-
+#include "gps_client.h"
 
 using namespace std;
 
@@ -63,7 +63,8 @@ struct TimestampedGPSData
 class GPSDriver 
 {
 public:
-    GPSDriver();
+  /// constructor for using gpsd client
+    GPSDriver(bool autorun);
     GPSDriver(const char * url, const string &channel, bool autorun);
 
     bool run();
@@ -80,9 +81,13 @@ private:
     static std::string getTimeStr();
     TimestampedGPSData m_latestData;
 
+    bool m_uselcm;
     const char * m_lcmURL;
     string m_lcmChannel;
     lcm::LCM m_lcm;
+
+    bool m_gpsdOk;
+    GPSDClient m_gpsdClient;
 
 
     pthread_mutex_t m_mutex; /** Mutex to control the access to member variables **/

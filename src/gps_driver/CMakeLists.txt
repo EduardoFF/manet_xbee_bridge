@@ -1,4 +1,5 @@
 
+include_directories(${PROJECT_SOURCE_DIR}/gps_client)
 set(gpsdriver_HEADERS
   gps_driver.h
 )
