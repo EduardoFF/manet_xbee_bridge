@@ -23,6 +23,7 @@ using namespace std;
 //#define NO_XBEE_TEST
 
 XbeeInterface *g_xbee;
+
 ROUTINGDriver *g_routingDriver;
 Timer *g_sendRoutingDataTimer;
 
@@ -40,7 +41,7 @@ TimestampedPLANNINGData g_lastPlanningDataSent;
 uint16_t g_lastXbeePlanId;
 vector< vector<uint8_t> > g_planningXbeeMsgs;
 
-/// mutex for sending one packet at a time
+/// Mutex used to send one packet at a time
 pthread_mutex_t g_sendMutex;
 
 /// Function to print Help if need be
@@ -77,7 +78,7 @@ uint8_t getNodeId(std::string desc)
     }
 }
 
-///// here we send the node info packet for routing Tables /////
+/// Function that sends the node info packet for routing Tables ///
 void
 sendRoutingDataTimerCB(void *arg)
 {
@@ -87,8 +88,8 @@ sendRoutingDataTimerCB(void *arg)
     pthread_mutex_lock(&g_sendMutex);
     using namespace xbee_app_data;
 
-    // make payload
-    //structure the data packets for Xbee
+    /// make payload
+    /// Structure the data packets for Xbee
     TimestampedROUTINGData routingData = g_routingDriver->data();
 
     /// first, check if the routing data has changed by comparing the
@@ -230,8 +231,7 @@ sendRoutingDataTimerCB(void *arg)
     pthread_mutex_unlock(&g_sendMutex);
 }
 
-
-///// here we send the node info packet for planning Tables /////
+/// Function that sends the node info packet for planning Tables ///
 void
 sendPlanningDataTimerCB(void *arg)
 {
@@ -263,7 +263,7 @@ sendPlanningDataTimerCB(void *arg)
             dataVec.resize(dataVec.size() + sizeof(Header) );
             memcpy(&dataVec[dataVec.size() - sizeof(Header)],
                     &hdr, sizeof(Header));
-            /// --- now the routing header
+            /// --- now the planning header
             Planning planHdr;
             dataVec.resize(dataVec.size() + sizeof(Planning) );
             memcpy(&dataVec[dataVec.size() - sizeof(Planning)],
@@ -381,10 +381,8 @@ sendPlanningDataTimerCB(void *arg)
 #endif
     }
 
-    pthread_mutex_unlock(&g_sendMutex);
+    pthread_mutex_unlock(&g_sendMutex);  /// Unlock the mutex
 }
-
-
 
 void
 signalHandler( int signum )
@@ -420,6 +418,7 @@ signalHandler( int signum )
     exit(signum);
 }
 
+/// Function that receives the messages and handles them per type
 void
 receiveData(uint16_t addr, void *data, char rssi, timespec timestamp, size_t len)
 {
@@ -428,21 +427,27 @@ receiveData(uint16_t addr, void *data, char rssi, timespec timestamp, size_t len
          << " rssi: " << +rssi << ") "
          <<  " len: " << len << endl;
     cout << "-----------------------" << endl;
+
     if (len > sizeof(Header))
     {
         Header header;
         memcpy(&header, data, sizeof(Header));
         cout << "Header: " << header << endl;
 
-        if (header.type == XBEEDATA_ENDNODEINFO )
+        if (header.type == XBEEDATA_ENDNODEINFO )               /// Check the type of Header
         {
-            if(len == sizeof(Header) + sizeof(EndNodeInfo))
+            /// Check the size of the packet
+            if(len == sizeof(Header) + sizeof(EndNodeInfo))     /// Packet is of proper size
             {
                 EndNodeInfo eInfo;
                 memcpy(&eInfo,
                        (unsigned char *)data + sizeof(Header),
                        sizeof(EndNodeInfo));
                 cout << "EndNodeInfo: " << eInfo << endl;
+            }
+            else                                                /// Packet is not of proper size
+            {
+                fprintf(stderr, "Invalid length for EndNodeInfo msg\n");
             }
         }
     }
@@ -455,8 +460,8 @@ int main(int argc, char * argv[])
     g_abort = false;
     g_lastRoutingDataSent.timestamp = 0;
     g_lastPlanningDataSent.timestamp = 0;
-    /// register signal
-    signal(SIGINT, signalHandler);
+
+    signal(SIGINT, signalHandler);      /// register signal
 
     // Simple Command line parser
     GetPot   cl(argc, argv);
@@ -467,6 +472,7 @@ int main(int argc, char * argv[])
     const int     nodeId   = cl.follow(1, "--nodeid");
     cl.enable_loop();
 
+    /// Xbee PARAMETERS
     XbeeInterfaceParam xbeePar;
     xbeePar.SourceAddress = nodeId;
     xbeePar.brate = baudrate;
@@ -498,14 +504,14 @@ int main(int argc, char * argv[])
     /// create routing Driver
     g_routingDriver = new ROUTINGDriver("udpm://239.255.76.67:7667?ttl=1", "RNP2", true);
 
-    // does it need to be modified???
+    /// Periodically send the Routing Table
     g_sendRoutingDataTimer = new Timer(TIMER_SECONDS, sendRoutingDataTimerCB, NULL);
     g_sendRoutingDataTimer->startPeriodic(1);
 
     /// create planning Driver
     g_planningDriver = new PLANNINGDriver("udpm://239.255.76.67:7667?ttl=1", "PLAN", true);
 
-    // does it need to be modified???
+    /// Periodically send the Plan
     g_sendPlanningDataTimer = new Timer(TIMER_SECONDS, sendPlanningDataTimerCB, NULL);
     g_sendPlanningDataTimer->startPeriodic(1);
 

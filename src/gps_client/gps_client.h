@@ -5,12 +5,16 @@
 class GPSDClient {
   public:
     GPSDClient();
-    double m_time, m_latitude,
+    float m_time, m_latitude,
       m_longitude, m_altitude;
 
     bool start();
     void step();
     void stop();
+    float getLat()  const;
+    float getLong() const;
+    float getAlt()  const;
+    float getTime() const;
 
   private:
     gpsmm *m_gps;

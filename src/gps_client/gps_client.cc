@@ -40,6 +40,30 @@ GPSDClient::stop()
   // gpsmm doesn't have a close method? OK ...
 }
 
+float
+GPSDClient::getLat() const
+{
+    return m_latitude;
+}
+
+float
+GPSDClient::getLong() const
+{
+    return m_longitude;
+}
+
+float
+GPSDClient::getAlt() const
+{
+    return m_altitude;
+}
+
+float
+GPSDClient::getTime() const
+{
+    return m_time;
+}
+
 void 
 GPSDClient::process_data(struct gps_data_t* p)
 {

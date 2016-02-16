@@ -38,7 +38,7 @@
 #include <lcm/lcm-cpp.hpp>
 #include <pthread.h>
 #include "pose_t.hpp"
-#include "gps_client.h"
+#include "gps_client/gps_client.h"
 
 using namespace std;
 

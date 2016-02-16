@@ -140,6 +140,10 @@ GPSDriver::internalThreadEntry()
 	  {
 	    printf("doing gpsd ...\n");
 	    m_gpsdClient.step();
+        m_latestData.lat = m_gpsdClient.getLat();
+        m_latestData.lon = m_gpsdClient.getLong();
+        m_latestData.alt = m_gpsdClient.getAlt();
+        m_latestData.timestamp = m_gpsdClient.getTime();
 	  }
 	/// or gpsd client
       }
