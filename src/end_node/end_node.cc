@@ -8,6 +8,7 @@
 #include "xbee_app_data.h"
 #include "timer.h"
 #include <csignal>
+#include <glog/logging.h>
 
 using namespace std;
 
@@ -92,6 +93,7 @@ endNodeInfoTimerCB(void *arg)
     else
     {
         printf("send OK\n");
+        LOG(INFO) << "gps Data Sent: lat: " << eInfo.latitude << ", lon:" << eInfo.longitude << ", alt: " << eInfo.altitude << endl;
     }
 #endif
     pthread_mutex_unlock(&g_sendMutex);
@@ -319,6 +321,9 @@ int main(int argc, char * argv[])
 {
 
     g_abort = false;
+
+    /// Initialize Log
+    google::InitGoogleLogging(argv[0]);
 
     /// register signal
     signal(SIGINT, signalHandler);

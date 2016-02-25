@@ -144,6 +144,7 @@ GPSDriver::internalThreadEntry()
         m_latestData.lon = m_gpsdClient.getLong();
         m_latestData.alt = m_gpsdClient.getAlt();
         m_latestData.timestamp = m_gpsdClient.getTime();
+        printf("Latest GPS data to received at time %f: %f %f %f\n",m_latestData.timestamp, m_latestData.lat, m_latestData.lon, m_latestData.alt);
 	  }
 	/// or gpsd client
       }

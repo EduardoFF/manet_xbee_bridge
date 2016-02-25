@@ -1,6 +1,8 @@
 #include <libgpsmm.h>
 #include <string>
 #include <cmath>
+#include <stdlib.h>
+#include <stdio.h>
 
 class GPSDClient {
   public:
@@ -17,6 +19,7 @@ class GPSDClient {
     float getTime() const;
 
   private:
+
     gpsmm *m_gps;
     bool m_use_gps_time;
     bool m_check_fix_by_variance;
@@ -25,6 +28,5 @@ class GPSDClient {
 
     void process_data_gps(struct gps_data_t* p);
 
-    void process_data_navsat(struct gps_data_t* p);
 };
 

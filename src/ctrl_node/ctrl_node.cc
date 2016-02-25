@@ -8,6 +8,7 @@
 #include "xbee_app_data.h"
 #include "timer.h"
 #include <csignal>
+#include <glog/logging.h>
 
 using namespace std;
 
@@ -444,6 +445,7 @@ receiveData(uint16_t addr, void *data, char rssi, timespec timestamp, size_t len
                        (unsigned char *)data + sizeof(Header),
                        sizeof(EndNodeInfo));
                 cout << "EndNodeInfo: " << eInfo << endl;
+                LOG(INFO) << "GPS Data Received: lat: " << eInfo.latitude << " lon: " << eInfo.longitude << " alt: " << eInfo.altitude << endl;
             }
             else                                                /// Packet is not of proper size
             {
@@ -460,6 +462,9 @@ int main(int argc, char * argv[])
     g_abort = false;
     g_lastRoutingDataSent.timestamp = 0;
     g_lastPlanningDataSent.timestamp = 0;
+
+    /// Initialize Log
+    google::InitGoogleLogging(argv[0]);
 
     signal(SIGINT, signalHandler);      /// register signal
 

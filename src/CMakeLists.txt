@@ -8,6 +8,14 @@
 cmake_minimum_required (VERSION 2.6)
 project (rnp_xbee_bridge)
 
+#-------------To add a 3rd party library-----------
+find_package(PkgConfig)
+pkg_check_modules(Glog libglog)
+
+link_directories(${Glog_LIBRARY_DIRS})
+include_directories(${Glog_INCLUDE_DIRS})
+#--------------------------------------------------
+
 set(CMAKE_MODULE_PATH $ENV{CMAKE_MODULE_PATH})
 
 SET (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin CACHE PATH
