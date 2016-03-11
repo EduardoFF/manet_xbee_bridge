@@ -1,33 +1,39 @@
-#include <libgpsmm.h>
-#include <string>
-#include <cmath>
-#include <stdlib.h>
-#include <stdio.h>
+#ifndef GPS_MANAGER_H_INCLUDED
+#define GPS_MANAGER_H_INCLUDED
 
-struct gps{
+#include <string>
+#include <libgpsmm.h>
+#include <cmath>
+
+struct gps1 {
 
 float x;
 float y;
 float z;
 
-gps(): x(0), y(0),z(0) {};
+gps1(): x(0), y(0),z(0) {};
 
 };
 
-class GPSDClient {
+class GPSManager {
   public:
-    GPSDClient();
 
-    gps getGPS();
-    void getGPS1();
+    GPSManager();
+
+    gps1 getGPS1();
+    void getGPS2();
 
   private:
+
     float m_latitude;
     float m_longitude;
     float m_altitude;
 
     gpsmm *m_gps;
+
     bool m_use_gps_time;
     bool m_check_fix_by_variance;
+
 };
 
+#endif // GPS_MANAGER_H_INCLUDED

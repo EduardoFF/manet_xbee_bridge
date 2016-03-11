@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <GetPot.hpp>
 #include "gps_driver.h"
+#include "gps_manager/gps_manager.h"
 #include "routing_driver.h"
 #include "planning_driver/planning_driver.h"
 #include "xbee_interface.h"
@@ -332,10 +333,10 @@ int main(int argc, char * argv[])
     GetPot   cl(argc, argv);
     if(cl.search(2, "--help", "-h") ) print_help(cl[0]);
     cl.init_multiple_occurrence();
-    const string  xbeeDev  = cl.follow("/dev/ttyUSB0", "--dev");
-    const int     baudrate = cl.follow(57600, "--baud");
-    const int     nodeId   = cl.follow(2, "--nodeid");
-    const bool    use_gpsd   = cl.follow(false, "--use-gpsd");
+    const string  xbeeDev   = cl.follow("/dev/ttyUSB0", "--dev");
+    const int     baudrate  = cl.follow(57600, "--baud");
+    const int     nodeId    = cl.follow(2, "--nodeid");
+    const bool    use_gpsd  = cl.follow(true, "--use-gpsd");
     cl.enable_loop();
 
     XbeeInterfaceParam xbeePar;
@@ -343,7 +344,7 @@ int main(int argc, char * argv[])
     xbeePar.brate           = baudrate;
     xbeePar.mode            = "xbee1";
     xbeePar.Device          = xbeeDev;
-    xbeePar.writeParams     = false;
+    xbeePar.writeParams     = true;
 
     /// create mutexes
     if (pthread_mutex_init(&g_sendMutex, NULL) != 0)
@@ -359,17 +360,17 @@ int main(int argc, char * argv[])
 #endif
 
     if( use_gpsd )
-      {
-	printf("USING GPSD\n");
-	/// create gpsDriver connection
-	g_gpsDriver = new GPSDriver(true);
-      }
+    {
+        printf("USING GPSD\n");
+        /// create gpsDriver connection
+        g_gpsDriver = new GPSDriver(true);
+    }
     else
-      {
-	/// create gpsDriver connection
-	g_gpsDriver = new GPSDriver("udpm://239.255.76.67:7667?ttl=1", "POSE", true);
-      }
-	
+    {
+        /// create gpsDriver connection
+        g_gpsDriver = new GPSDriver("udpm://239.255.76.67:7667?ttl=1", "POSE", true);
+    }
+
     /// create routing Driver -- we don't need to listen LCM
     g_routingDriver = new ROUTINGDriver("udpm://239.255.76.67:7667?ttl=1", "RNP2", false);
 
