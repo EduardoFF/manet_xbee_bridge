@@ -55,9 +55,11 @@ def readFromCmdline(args):
         while m:
             dest=args[i]
             i+=1
+            nh=args[i]
+            i+=1            
             w = int(args[i])
             i+=1
-            rt.append( (dest,w) )
+            rt.append( (dest,nh, w) )
             m-=1
         rtree.append((node, rt))
 
@@ -91,9 +93,9 @@ for (node, rtable) in rtree:
     rt.node = node
     rt.n = len(rtable)
     entries=list()
-    for (nh,w) in rtable:
+    for (dest,nh,w) in rtable:
         re = route2_entry_t()
-        re.dest = "SINK"
+        re.dest = dest
         re.node = nh
         re.weight = w
         entries.append(re)
