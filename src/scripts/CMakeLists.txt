@@ -1,0 +1,1 @@
+install(FILES  DESTINATION bin)
