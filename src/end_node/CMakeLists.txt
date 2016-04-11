@@ -39,6 +39,3 @@ install(TARGETS end_node
   ARCHIVE DESTINATION lib
   )
 
-#install(FILES 
-#  end_node.h DESTINATION include)
-

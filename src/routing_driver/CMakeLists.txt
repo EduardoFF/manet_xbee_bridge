@@ -12,11 +12,4 @@ add_library(routing_driver ${routingdriver_IMPLEMENTATIONS})
 
 target_link_libraries(routing_driver)
 
-#install(TARGETS routing_driver
-#  RUNTIME DESTINATION bin
-#  LIBRARY DESTINATION lib
-#  ARCHIVE DESTINATION lib
-#  )
-
-#install(FILES routing_driver.h DESTINATION include)
 

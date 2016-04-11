@@ -15,12 +15,4 @@ target_link_libraries(xbee_app_data
   xbee.a
   )
 
-install(TARGETS xbee_app_data
-  RUNTIME DESTINATION bin
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
-  )
-
-install(FILES 
-  xbee_app_data.h DESTINATION include)
 

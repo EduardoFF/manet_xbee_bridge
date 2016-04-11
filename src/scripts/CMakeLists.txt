@@ -1,1 +1,1 @@
-install(FILES  DESTINATION bin)
+install(FILES setup_manet setup_wlan DESTINATION bin)
