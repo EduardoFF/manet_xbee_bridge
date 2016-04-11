@@ -7,6 +7,54 @@ TXPOWER=20
 CHANNEL=1
 WLAN=wlan19
 
+print_help()
+{
+    echo "setup_manet: xxxx"
+}
+export -f print_help
+
+
+while [ $# -gt 0 ]
+do
+    key="$1"
+    case $key in
+	-n|---node-id)
+	    NODEID="$2"
+	    shift # past argument
+	    ;;
+	-p|--power)
+	    TXPOWER="$2"
+	    shift # past argument
+	    ;;
+	-c|--channel)
+	    CHANNEL="$2"
+	    shift # past argument
+	    ;;
+	-i|--interface)
+	    WLAN="$2"
+	    shift
+	    ;;
+	-h|--help)
+	    print_help
+	    exit
+	    shift
+	    ;;
+	*)
+            # unknown option
+	    print_help
+	    exit
+	    ;;
+    esac
+    shift # past argument or value
+done
+
+echo "using:"
+echo "NODEID=${NODEID}"
+echo "TXPOWER=${TXPOWER}"
+echo "CHANNEL=${CHANNEL}"
+echo "WLAN=${WLAN}"
+
+
 # modifying parameters from cmd line
 source $1
 
@@ -18,10 +66,10 @@ WLANM=`cat /sys/class/net/${WLAN}/address`
 #echo ${WLANM}
 
 
-sudo ./setup_wlan.sh ${WLAN} ${IPADDR}/${NETMASK} ${CHANNEL} ${TXPOWER} 
+setup_wlan ${WLAN} ${IPADDR}/${NETMASK} ${CHANNEL} ${TXPOWER} 
 
-sudo ip route del to ${IPPREFIX}.0/${NETMASK}
+ip route del to ${IPPREFIX}.0/${NETMASK}
 
 
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib
-RNP_PKGclick WLANMAC=${WLANM} WLANINTERFACE=${WLAN} ADHOCIP=${IPADDR}/${NETMASK} ../../click/scripts/rnp_scripts/rnp_linux_args.click
+RNP_PKGclick WLANMAC=${WLANM} WLANINTERFACE=${WLAN} ADHOCIP=${IPADDR}/${NETMASK} /root/click_scripts/rnp_scripts/rnp_linux_args_aligned.click
