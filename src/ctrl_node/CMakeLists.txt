@@ -35,6 +35,6 @@ install(TARGETS ctrl_node
   ARCHIVE DESTINATION lib
   )
 
-install(FILES 
-  ctrl_node.h DESTINATION include)
+#install(FILES 
+#  ctrl_node.h DESTINATION include)
 
