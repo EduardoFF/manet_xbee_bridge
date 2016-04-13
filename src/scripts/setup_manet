@@ -6,6 +6,8 @@ NODEID=1
 TXPOWER=20
 CHANNEL=1
 WLAN=wlan19
+CLICKSCRIPT=/root/click_scripts/rnp_scripts/rnp_linux_args_aligned.click
+INITROUTES=""
 
 print_help()
 {
@@ -34,6 +36,14 @@ do
 	    WLAN="$2"
 	    shift
 	    ;;
+	-s|--click-script)
+	    CLICKSCRIPT="$2"
+	    shift
+	    ;;
+	-r|--init-routes)
+	    INITROUTES="$2"
+	    shift
+	    ;;
 	-h|--help)
 	    print_help
 	    exit
@@ -55,8 +65,6 @@ echo "CHANNEL=${CHANNEL}"
 echo "WLAN=${WLAN}"
 
 
-# modifying parameters from cmd line
-source $1
 
 IPPREFIX=10.42.43
 NETMASK=24
@@ -70,6 +78,11 @@ setup_wlan ${WLAN} ${IPADDR}/${NETMASK} ${CHANNEL} ${TXPOWER}
 
 ip route del to ${IPPREFIX}.0/${NETMASK}
 
+RNP_PKGclick WLANMAC=${WLANM} WLANINTERFACE=${WLAN} ADHOCIP=${IPADDR}/${NETMASK} ${CLICKSCRIPT} &
+sleep 5
+if [ -n "${INITROUTES}" ]; then
+    echo "sending default routes"
+    python -m publish_route2_tree -c RNP2 ${IPADDR} `cat ${INITROUTES} | tr '\n' ' '`
+fi 
+   
 
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib
-RNP_PKGclick WLANMAC=${WLANM} WLANINTERFACE=${WLAN} ADHOCIP=${IPADDR}/${NETMASK} /root/click_scripts/rnp_scripts/rnp_linux_args_aligned.click
