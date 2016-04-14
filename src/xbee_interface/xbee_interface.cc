@@ -16,6 +16,7 @@ using namespace std;
 
 /* ========================================================================== */
 
+#define __XBEE_868 1
 char rcv_msg[130];
 
 class MyConnection: public libxbee::ConCallback {
@@ -129,10 +130,13 @@ void
 XbeeInterface::setup()
 {
   ///
+#ifdef __XBEE_868
+  //  setParameter(mATCon, "NI", (uint16_t) mParam.SourceAddress, 2);
+#else
   setParameter(mATCon, "MY", (uint16_t) mParam.SourceAddress, 2);
-  
-  setParameter(mATCon, "ID", mParam.PanId, 2);
-  setParameter(mATCon, "PL", mParam.PowerLevel, 1);
+#endif
+  setParameter(mATCon, "ID", mParam.PanId, 2); 
+  //setParameter(mATCon, "PL", mParam.PowerLevel, 1);
   if( mParam.writeParams )
     setParameter(mATCon, "WR", 0, 0);
 }
@@ -141,11 +145,35 @@ MyConnection *
 XbeeInterface::createConnection(uint16_t addr)
 {
   xbee_conAddress *xbeeAddr = new xbee_conAddress();
+  #ifdef __XBEE_868
+  xbeeAddr->addr64_enabled = 1;
+  xbeeAddr->addr16_enabled = 0;
+  xbeeAddr->addr64[3] = 0;
+  xbeeAddr->addr64[2] = 0;
+  xbeeAddr->addr64[1] = ((addr >> 0) & 0xff);
+  xbeeAddr->addr64[0] = ((addr >> 8) & 0xff);
+  debug("creating Data connection\n");
+  MyConnection *con =  
+    new MyConnection(this, "Data", xbeeAddr);
+  if( addr == 0xffff ) /// broadcast!
+    {
+      debug("connection is broadcast\n");
+      struct xbee_conSettings settings;
+      con->getSettings(&settings);
+      settings.disableAck = 1;
+      settings.catchAll = 1;
+      con->setSettings(&settings);
+    }
+  else
+    {
+      debug("connection is NOT broadcast\n");
+    }
+#else
   xbeeAddr->addr64_enabled = 0;
   xbeeAddr->addr16_enabled = 1;
   xbeeAddr->addr16[1] = ((addr >> 0) & 0xff);
   xbeeAddr->addr16[0] = ((addr >> 8) & 0xff);
-  //TODO Find out if libxbee takes ownership of xbeeAddr
+    //TODO Find out if libxbee takes ownership of xbeeAddr
   MyConnection *con =  
     new MyConnection(this, "16-bit Data", xbeeAddr);
   if( addr == 0xffff ) /// broadcast!
@@ -156,6 +184,8 @@ XbeeInterface::createConnection(uint16_t addr)
       settings.catchAll = 1;
       con->setSettings(&settings);
     }
+  #endif
+
 
   mConn[addr] = con;
   debug("connection to %d - done", addr);
@@ -289,6 +319,27 @@ XbeeInterface::receive(libxbee::Pkt **pkt)
 	  debug("translated addr %d %d to %d", 
 		xpkt->address.addr16[0],
 		xpkt->address.addr16[1],
+		addr);
+	  unsigned char rssi = xpkt->rssi;
+	  timespec timestamp = xpkt->timestamp;
+	  int dataLen = xpkt->dataLen;
+	  memcpy(rcv_msg, xpkt->data, dataLen);
+	  debug("passing received packet with size %d", dataLen);
+	  mReceiveCB(addr, rcv_msg, rssi, timestamp, dataLen);
+	}
+
+    }
+  else if( strcmp((*pkt)->getHnd()->conType,"64-bit Data")==0)
+    {
+      if( mReceiveCB )
+	{
+	  struct xbee_pkt *xpkt = (*pkt)->getHnd();
+	  uint16_t addr;
+	  addr = (addr & 0xff00 ) | (xpkt->address.addr64[1]);
+	  addr = (addr & 0x00ff )  | (xpkt->address.addr64[0] << 8);
+	  debug("translated addr %d %d to %d", 
+		xpkt->address.addr64[0],
+		xpkt->address.addr64[1],
 		addr);
 	  unsigned char rssi = xpkt->rssi;
 	  timespec timestamp = xpkt->timestamp;

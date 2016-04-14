@@ -48,7 +48,8 @@ pthread_mutex_t g_sendMutex;
 /// Function to print Help if need be
 void print_help(const string Application)
 {
-    exit(0);
+  printf("ctrl_node:\n");
+  exit(0);
 }
 
 /// let's assume that desc is either 'SINK' or an IP address
@@ -475,13 +476,14 @@ int main(int argc, char * argv[])
     const string  xbeeDev  = cl.follow("/dev/ttyUSB0", "--dev");
     const int     baudrate = cl.follow(57600, "--baud");
     const int     nodeId   = cl.follow(1, "--nodeid");
+    const string  xbeeMode = cl.follow("xbee1", "--mode");
     cl.enable_loop();
 
     /// Xbee PARAMETERS
     XbeeInterfaceParam xbeePar;
     xbeePar.SourceAddress = nodeId;
     xbeePar.brate = baudrate;
-    xbeePar.mode  = "xbee1";
+    xbeePar.mode  = xbeeMode;
     xbeePar.Device = xbeeDev;
     xbeePar.writeParams = false;
 
