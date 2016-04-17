@@ -67,9 +67,12 @@ flowInfoTimerCB(void *arg)
   if( g_abort )
     return;
 
+printf("flowInfoTimer\n");
+fflush(stdout);
+
+
   /// lock the mutex first
-  pthread_mutex_lock(&g_sendMutex);
-  using namespace xbee_app_data;
+   using namespace xbee_app_data;
 
   //// compose node info packet
   Header hdr;
@@ -110,11 +113,16 @@ flowInfoTimerCB(void *arg)
       printf("No active flows to notify\n");
       return;
     }
+   else
+	printf("Notifying %d flows\n",fInfoHdr->nEntries);
+
     XbeeInterface::TxInfo txInfo;
     txInfo.reqAck  = false;
     txInfo.readCCA = false;
 
 #ifndef NO_XBEE_TEST
+pthread_mutex_lock(&g_sendMutex);
+ 
     int retval = g_xbee->send(1, txInfo, g_outBuf, buflen);
     if( retval == XbeeInterface::NO_ACK )
     {
@@ -127,10 +135,11 @@ flowInfoTimerCB(void *arg)
     else
     {
         printf("send OK\n");
-        LOG(INFO) << "gps Data Sent: lat: " << eInfo.latitude << ", lon:" << eInfo.longitude << ", alt: " << eInfo.altitude << endl;
+        //LOG(INFO) << "gps Data Sent: lat: " << eInfo.latitude << ", lon:" << eInfo.longitude << ", alt: " << eInfo.altitude << endl;
     }
-#endif
+
     pthread_mutex_unlock(&g_sendMutex);
+#endif
   
   //TimestampedGPSData gpsData = g_gpsDriver->data();
   //  eInfo.dataRate  = g_dataRateMon->data();
@@ -142,6 +151,8 @@ endNodeInfoTimerCB(void *arg)
 {
     if( g_abort )
         return;
+printf("endNodeInfoTimer\n");
+fflush(stdout);
 
     /// lock the mutex first
     pthread_mutex_lock(&g_sendMutex);
@@ -169,7 +180,7 @@ endNodeInfoTimerCB(void *arg)
     txInfo.readCCA = false;
 
 #ifndef NO_XBEE_TEST
-    int retval = g_xbee->send(1, txInfo, g_outBuf, buflen);
+    int retval = g_xbee->send(0xffff, txInfo, g_outBuf, buflen);
     if( retval == XbeeInterface::NO_ACK )
     {
         printf("send failed NOACK\n");
@@ -420,6 +431,8 @@ int main(int argc, char * argv[])
     GetPot   cl(argc, argv);
     if(cl.search(2, "--help", "-h") ) print_help(cl[0]);
     cl.init_multiple_occurrence();
+
+    cl.enable_loop();
     const string  xbeeDev   = cl.follow("/dev/ttyUSB0", "--dev");
     const int     baudrate  = cl.follow(57600, "--baud");
     g_nodeId    = cl.follow(2, "--nodeid");
@@ -429,7 +442,6 @@ int main(int argc, char * argv[])
     const string  myMac  = cl.follow("none", "--mac");
     const string  xbeeMode = cl.follow("xbee1", "--mode");
     
-    cl.enable_loop();
 
     XbeeInterfaceParam xbeePar;
     xbeePar.SourceAddress   = g_nodeId;
@@ -474,6 +486,9 @@ int main(int argc, char * argv[])
     g_planningDriver = new PLANNINGDriver("udpm://239.255.76.67:7667?ttl=1", "PLAN", false);
 
     g_endNodeInfoTimer = new Timer(TIMER_SECONDS, endNodeInfoTimerCB, NULL);
+    g_endNodeInfoTimer->startPeriodic(1);
+
+
     g_flowInfoTimer = new Timer(TIMER_SECONDS, flowInfoTimerCB, NULL);
     g_flowInfoTimer->startPeriodic(1);
 
