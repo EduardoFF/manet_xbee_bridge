@@ -14,7 +14,7 @@
 #define FOREACH(i,c) for(__typeof((c).begin()) i=(c).begin();i!=(c).end();++i)
 using namespace std;
 
-#define NO_XBEE_TEST 0
+//#define NO_XBEE_TEST 0
 
 #ifndef NO_XBEE_TEST
 XbeeInterface *g_xbee;
