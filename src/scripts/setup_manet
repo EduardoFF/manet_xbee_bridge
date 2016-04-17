@@ -93,6 +93,8 @@ if [ -n "${INITROUTES}" ]; then
 fi
 read -p "Press any key to finish"
 
+kill -9 $(pidof RNP_PKGclick)
+
 echo "Finished."
 
 

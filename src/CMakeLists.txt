@@ -56,6 +56,7 @@ endif()
 
 add_subdirectory(routing_driver)
 add_subdirectory(planning_driver)
+add_subdirectory(flow_notifier)
 add_subdirectory(gps_driver)
 add_subdirectory(gps_client)
 add_subdirectory(xbee_interface)

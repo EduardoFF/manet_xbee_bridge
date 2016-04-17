@@ -33,11 +33,12 @@ namespace xbee_app_data
     typedef struct Packet Packet;
     typedef uint8_t NodeId;
 
-    static const char XBEEDATA_ENDNODEINFO  = 1;
-    static const char XBEEDATA_ROUTING      = 2;
-    static const char XBEEDATA_PLANNING     = 3;
-    static const char XBEE_MAX_PAYLOAD_LENGTH   = 127;
-    static const uint16_t XBEE_BROADCAST_ADDR   = 65535;
+    static const char     XBEEDATA_ENDNODEINFO      = 1;
+    static const char     XBEEDATA_ROUTING          = 2;
+    static const char     XBEEDATA_PLANNING         = 3;
+    static const char     XBEEDATA_FLOWINFO         = 4;
+    static const char     XBEE_MAX_PAYLOAD_LENGTH   = 127;
+    static const uint16_t XBEE_BROADCAST_ADDR       = 65535;
 
     struct __attribute__((__packed__)) EndNodeInfo
     {
@@ -46,6 +47,18 @@ namespace xbee_app_data
         float altitude;
         int dataRate;
         int lastTabId;
+    };
+
+    struct __attribute__((__packed__)) FlowInfoHdr
+    {
+      uint8_t nEntries;
+    };
+
+    struct __attribute__((__packed__)) FlowInfoEntry
+    {
+      NodeId nodeId;
+      /// if negative, means incoming flow
+      double  dataRate;
     };
 
     struct __attribute__((__packed__)) Routing
@@ -95,7 +108,8 @@ namespace xbee_app_data
 
     struct __attribute__((__packed__)) Header
     {
-        char type;
+        char   type;
+	NodeId src;
     };
 
 };

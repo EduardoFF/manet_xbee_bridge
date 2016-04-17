@@ -23,6 +23,7 @@ target_link_libraries(end_node
   gps_driver
   routing_driver
   planning_driver
+  flow_notifier
   xbee_interface
   xbee_app_data
   timer

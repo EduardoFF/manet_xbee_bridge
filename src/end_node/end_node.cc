@@ -7,20 +7,30 @@
 #include "planning_driver/planning_driver.h"
 #include "xbee_interface.h"
 #include "xbee_app_data.h"
+#include "flow_notifier/flow_notifier.h"
 #include "timer.h"
 #include <csignal>
 #include <glog/logging.h>
-
+#define FOREACH(i,c) for(__typeof((c).begin()) i=(c).begin();i!=(c).end();++i)
 using namespace std;
+
+#define NO_XBEE_TEST 1
 
 #ifndef NO_XBEE_TEST
 XbeeInterface *g_xbee;
 #endif
 
+int g_nodeId;
+
 PLANNINGDriver *g_planningDriver;
 ROUTINGDriver *g_routingDriver;
+
+
+
+FlowNotifier *g_flowNotifier;
 GPSDriver *g_gpsDriver;
 Timer *g_endNodeInfoTimer;
+Timer *g_flowInfoTimer;
 char g_outBuf[130];
 bool g_abort;
 
@@ -47,6 +57,83 @@ getNodeDesc(uint8_t nid)
     ostringstream ss;
     ss << "10.42.43." << +nid;
     return ss.str();
+}
+
+
+///// here we send the node info packet /////
+void
+flowInfoTimerCB(void *arg)
+{
+  if( g_abort )
+    return;
+
+  /// lock the mutex first
+  pthread_mutex_lock(&g_sendMutex);
+  using namespace xbee_app_data;
+
+  //// compose node info packet
+  Header hdr;
+
+  /// make header
+  hdr.src  = g_nodeId;
+  hdr.type = XBEEDATA_FLOWINFO;
+  memcpy(g_outBuf, &hdr, sizeof(Header));
+
+  /// make payload
+  FlowInfoEntry fInfo;
+  FlowList fList = g_flowNotifier->getFlows(2000);
+  if( !fList.size()  )
+    {
+      printf("No flows to notify\n");
+      return;
+    }
+
+  FlowInfoHdr *fInfoHdr = (FlowInfoHdr *) (g_outBuf+sizeof(Header));
+  fInfoHdr->nEntries=0;
+  
+  char *ptr = (char *) (g_outBuf+sizeof(Header)+sizeof(FlowInfoHdr));
+  size_t buflen = sizeof(Header)+sizeof(FlowInfoHdr);
+      
+  FOREACH(it, fList )
+    {
+      fInfo.nodeId =g_flowNotifier->getIdFromAddressBook(it->dst_addr);
+      if( fInfo.nodeId <= 0)
+	continue;
+      fInfo.dataRate = it->data_rate;
+      memcpy(ptr, &fInfo, sizeof(FlowInfoEntry));
+      ptr += sizeof(FlowInfoEntry);
+      buflen += sizeof(FlowInfoEntry);
+      fInfoHdr->nEntries+=1;
+    }
+  if( !fInfoHdr->nEntries )
+    {
+      printf("No active flows to notify\n");
+      return;
+    }
+    XbeeInterface::TxInfo txInfo;
+    txInfo.reqAck  = false;
+    txInfo.readCCA = false;
+
+#ifndef NO_XBEE_TEST
+    int retval = g_xbee->send(1, txInfo, g_outBuf, buflen);
+    if( retval == XbeeInterface::NO_ACK )
+    {
+        printf("send failed NOACK\n");
+    }
+    else if( retval == XbeeInterface::TX_MAC_BUSY )
+    {
+        printf("send failed MACBUSY\n");
+    }
+    else
+    {
+        printf("send OK\n");
+        LOG(INFO) << "gps Data Sent: lat: " << eInfo.latitude << ", lon:" << eInfo.longitude << ", alt: " << eInfo.altitude << endl;
+    }
+#endif
+    pthread_mutex_unlock(&g_sendMutex);
+  
+  //TimestampedGPSData gpsData = g_gpsDriver->data();
+  //  eInfo.dataRate  = g_dataRateMon->data();
 }
 
 ///// here we send the node info packet /////
@@ -335,12 +422,16 @@ int main(int argc, char * argv[])
     cl.init_multiple_occurrence();
     const string  xbeeDev   = cl.follow("/dev/ttyUSB0", "--dev");
     const int     baudrate  = cl.follow(57600, "--baud");
-    const int     nodeId    = cl.follow(2, "--nodeid");
+    g_nodeId    = cl.follow(2, "--nodeid");
     const bool    use_gpsd  = cl.follow(true, "--use-gpsd");
+    const string  addrBook  = cl.follow("none", "--abook");
+    const string  myIp   = cl.follow("none", "--ip");
+    const string  myMac  = cl.follow("none", "--mac");
+    
     cl.enable_loop();
 
     XbeeInterfaceParam xbeePar;
-    xbeePar.SourceAddress   = nodeId;
+    xbeePar.SourceAddress   = g_nodeId;
     xbeePar.brate           = baudrate;
     xbeePar.mode            = "xbee1";
     xbeePar.Device          = xbeeDev;
@@ -363,13 +454,17 @@ int main(int argc, char * argv[])
     {
         printf("USING GPSD\n");
         /// create gpsDriver connection
-        g_gpsDriver = new GPSDriver(true);
+	//        g_gpsDriver = new GPSDriver(true);
     }
     else
     {
         /// create gpsDriver connection
         g_gpsDriver = new GPSDriver("udpm://239.255.76.67:7667?ttl=1", "POSE", true);
     }
+
+    g_flowNotifier = new FlowNotifier("udpm://239.255.76.67:7667?ttl=1", "iflow", true);
+    if( addrBook != "none" )
+      g_flowNotifier->readAddressBook(addrBook);
 
     /// create routing Driver -- we don't need to listen LCM
     g_routingDriver = new ROUTINGDriver("udpm://239.255.76.67:7667?ttl=1", "RNP2", false);
@@ -378,7 +473,10 @@ int main(int argc, char * argv[])
     g_planningDriver = new PLANNINGDriver("udpm://239.255.76.67:7667?ttl=1", "PLAN", false);
 
     g_endNodeInfoTimer = new Timer(TIMER_SECONDS, endNodeInfoTimerCB, NULL);
-    //  g_endNodeInfoTimer->startPeriodic(1);
+    g_flowInfoTimer = new Timer(TIMER_SECONDS, flowInfoTimerCB, NULL);
+    g_flowInfoTimer->startPeriodic(1);
+
+    
 
     /// Sleep
     for(;;)

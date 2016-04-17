@@ -15,5 +15,6 @@ ostream &operator<<(ostream &os, const EndNodeInfo &info)
 ostream &operator<<(ostream &os, const Header &hdr)
 {
   os << "type " << hdr.type;
+  os << " src " << hdr.src;
   return os;
 }

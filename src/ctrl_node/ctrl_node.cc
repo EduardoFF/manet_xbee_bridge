@@ -453,6 +453,38 @@ receiveData(uint16_t addr, void *data, char rssi, timespec timestamp, size_t len
                 fprintf(stderr, "Invalid length for EndNodeInfo msg\n");
             }
         }
+
+	if (header.type == XBEEDATA_FLOWINFO )  /// Check the type of Header
+        {
+	  printf("Got FlowInfo msg\n");
+	  if( len >= sizeof(Header) + sizeof(FlowInfoHdr) )
+	    {
+	      FlowInfoHdr fInfoHdr;
+	      memcpy(&fInfoHdr,
+		     (unsigned char *)data + sizeof(Header),
+		     sizeof(FlowInfoHdr));
+	      printf("got info for %d flows\n",
+		     fInfoHdr.nEntries);
+	      FlowInfoEntry fEntry;
+	      char *ptr = (char *) data + sizeof(Header)+sizeof(FlowInfoHdr);
+	      for(int i=0; i< fInfoHdr.nEntries;i++)
+		{
+		  memcpy(&fEntry,
+			 ptr,
+			 sizeof(FlowInfoEntry));
+		  ptr += sizeof(FlowInfoEntry);
+		  printf("FlowNotify %d %.2f\n",
+			 (int) fEntry.nodeId,
+			 fEntry.dataRate);
+		}
+	    }
+	  else
+	    {
+	      fprintf(stderr, "Invalid length for FlowInfo msg\n");
+	    }
+
+	}
+
     }
     cout << "-----------------------" << endl;
 }
