@@ -14,7 +14,7 @@
 #define FOREACH(i,c) for(__typeof((c).begin()) i=(c).begin();i!=(c).end();++i)
 using namespace std;
 
-#define NO_XBEE_TEST 1
+#define NO_XBEE_TEST 0
 
 #ifndef NO_XBEE_TEST
 XbeeInterface *g_xbee;
@@ -427,13 +427,14 @@ int main(int argc, char * argv[])
     const string  addrBook  = cl.follow("none", "--abook");
     const string  myIp   = cl.follow("none", "--ip");
     const string  myMac  = cl.follow("none", "--mac");
+    const string  xbeeMode = cl.follow("xbee1", "--mode");
     
     cl.enable_loop();
 
     XbeeInterfaceParam xbeePar;
     xbeePar.SourceAddress   = g_nodeId;
     xbeePar.brate           = baudrate;
-    xbeePar.mode            = "xbee1";
+    xbeePar.mode            = xbeeMode;
     xbeePar.Device          = xbeeDev;
     xbeePar.writeParams     = true;
 
