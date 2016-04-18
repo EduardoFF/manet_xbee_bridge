@@ -333,7 +333,8 @@ XbeeInterface::receive(libxbee::Pkt **pkt)
 	}
 
     }
-  else if( strcmp((*pkt)->getHnd()->conType,"64-bit Data")==0)
+  else if( strcmp((*pkt)->getHnd()->conType,"64-bit Data")==0
+	   ||  strcmp((*pkt)->getHnd()->conType,"Data")==0 )
     {
       if( mReceiveCB )
 	{

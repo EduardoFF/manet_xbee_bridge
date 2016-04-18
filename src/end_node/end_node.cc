@@ -14,7 +14,7 @@
 #define FOREACH(i,c) for(__typeof((c).begin()) i=(c).begin();i!=(c).end();++i)
 using namespace std;
 
-#define NO_XBEE_TEST 0
+//#define NO_XBEE_TEST 0
 
 #ifndef NO_XBEE_TEST
 XbeeInterface *g_xbee;
@@ -107,6 +107,7 @@ fflush(stdout);
       ptr += sizeof(FlowInfoEntry);
       buflen += sizeof(FlowInfoEntry);
       fInfoHdr->nEntries+=1;
+      printf("Flow %d %.2f\n", fInfo.nodeId, fInfo.dataRate);
     }
   if( !fInfoHdr->nEntries )
     {
@@ -123,7 +124,7 @@ fflush(stdout);
 #ifndef NO_XBEE_TEST
 pthread_mutex_lock(&g_sendMutex);
  
-    int retval = g_xbee->send(1, txInfo, g_outBuf, buflen);
+    int retval = g_xbee->send(0xffff, txInfo, g_outBuf, buflen);
     if( retval == XbeeInterface::NO_ACK )
     {
         printf("send failed NOACK\n");
@@ -490,7 +491,7 @@ int main(int argc, char * argv[])
 
 
     g_flowInfoTimer = new Timer(TIMER_SECONDS, flowInfoTimerCB, NULL);
-    g_flowInfoTimer->startPeriodic(1);
+    g_flowInfoTimer->startPeriodic(3);
 
     
 
