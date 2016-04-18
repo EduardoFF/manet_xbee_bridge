@@ -71,9 +71,20 @@ FlowNotifier::notifyFlows(int nid, uint64_t timestamp, FlowList &flist)
     {
       FlowEntry &fe = flist[i];
       flow_entry_t fentry;
-      ///
-      std::string src_addr_s = fe.src_addr.toString();
-      std::string dst_addr_s = fe.dst_addr.toString();
+      /// change nid to ip
+      node_addr src_a = fe.src_addr;
+      node_addr dst_a = fe.dst_addr;
+      if( fe.src_addr.type == 'n' )
+	{
+	  src_a = getIpFromAddressBook((int) fe.src_addr.value[0]);
+	}
+      if( fe.dst_addr.type == 'n' )
+	{
+	  dst_a = getIpFromAddressBook((int) fe.dst_addr.value[0]);
+	}
+
+      std::string src_addr_s = src_a.toString();
+      std::string dst_addr_s = dst_a.toString();
       
 	
       fentry.src_addr = src_addr_s;
@@ -84,6 +95,7 @@ FlowNotifier::notifyFlows(int nid, uint64_t timestamp, FlowList &flist)
       fentry.last_activity = fe.last_activity;
       mymsg.flows[ix++]=fentry;
     }
+  printf("notified flows to %s\n", m_lcmChannel.c_str());
   m_lcm.publish(m_lcmChannel.c_str(), &mymsg);
 }
 

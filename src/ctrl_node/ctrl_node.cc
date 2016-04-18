@@ -31,7 +31,7 @@ Timer *g_sendRoutingDataTimer;
 
 // to make xbee - LCM bridge
 FlowNotifier *g_flowNotifier;
-
+GPSDriver *g_gpsDriver;
 
 PLANNINGDriver *g_planningDriver;
 Timer *g_sendPlanningDataTimer;
@@ -132,9 +132,9 @@ sendRoutingDataTimerCB(void *arg)
             while(it != routingData.route.end() )
             {
                 std::string nodedesc = it->first;
-                cout << "pushing table of " << nodedesc << endl;
+                LOG(INFO) << "pushing table of " << nodedesc;
                 RoutingTable table = it->second;
-                cout << table.size() << " entries " << endl;
+                LOG(INFO) << table.size() << " entries ";
                 /// can we fit all entries here ?
                 if( dataVec.size() + sizeof(xbee_app_data::RoutingTableHdr)
                         + sizeof(xbee_app_data::RoutingEntry)*table.size()
@@ -159,7 +159,7 @@ sendRoutingDataTimerCB(void *arg)
                         memcpy(&dataVec[dataVec.size() - sizeof(RoutingEntry)],
                                 &rtentry, sizeof(RoutingEntry));
                     }
-                    cout << "byte count " << dataVec.size() << endl;
+                    LOG(INFO) << "byte count " << dataVec.size();
                 }
                 else
                 {
@@ -177,7 +177,8 @@ sendRoutingDataTimerCB(void *arg)
             }
         }
         /// now we care about the fragments
-        printf("generated msgs %lu\n", g_routingXbeeMsgs.size());
+        LOG(INFO) << "generated msgs "
+		  << g_routingXbeeMsgs.size();
         g_lastXbeeTableId++;
         uint8_t fgn = 0;
         FOREACH(jt, g_routingXbeeMsgs)
@@ -202,15 +203,17 @@ sendRoutingDataTimerCB(void *arg)
     {
         /// we don't need to encode again the xbee payload since the
         /// routing hasn't changed
-        printf("routing unchanged ...\n");
+      LOG(INFO) << "routing unchanged ...";
     }
 
-    printf("sending %ld msgs\n", g_routingXbeeMsgs.size());
+    if( g_routingXbeeMsgs.size() )
+      LOG(INFO) << "sending " << g_routingXbeeMsgs.size() << " msgs";
     for(int i=0; i< g_routingXbeeMsgs.size(); i++)
     {
-        printf("sending msgs %d out of %ld with size %lu\n", i+1,
-               g_routingXbeeMsgs.size(), g_routingXbeeMsgs[i].size() );
-        std::cout << +(g_routingXbeeMsgs[i][0]) << std::endl;
+      LOG(INFO) << "sending msgs " << (i+1)
+		<< " out of " << g_routingXbeeMsgs.size()
+		<< "with size " << g_routingXbeeMsgs[i].size();
+      LOG(INFO) << +(g_routingXbeeMsgs[i][0]);
 
         memcpy(g_outBuf, &g_routingXbeeMsgs[i][0], g_routingXbeeMsgs[i].size());
         size_t buflen = g_routingXbeeMsgs[i].size();
@@ -222,15 +225,15 @@ sendRoutingDataTimerCB(void *arg)
         int retval = g_xbee->send(XBEE_BROADCAST_ADDR, txInfo, g_outBuf, buflen);
         if( retval == XbeeInterface::NO_ACK )
         {
-            printf("send failed NOACK\n");
+	  LOG(INFO) << "send failed NOACK";
         }
         else if( retval == XbeeInterface::TX_MAC_BUSY )
         {
-            printf("send failed MACBUSY\n");
+	  LOG(INFO) << "send failed MACBUSY";
         }
         else
         {
-            printf("send OK\n");
+	  LOG(INFO) << "send OK";
         }
 #endif
     }
@@ -282,9 +285,9 @@ sendPlanningDataTimerCB(void *arg)
             while(it != planningData.plan.end() )
             {
                 std::string nodedesc = it->first;
-                cout << "pushing table of " << nodedesc << endl;
+		LOG(INFO) << "pushing table of " << nodedesc;
                 PlanningTable table = it->second;
-                cout << table.size() << " entries " << endl;
+		LOG(INFO) << table.size() << " entries ";
                 /// can we fit all entries here ?
                 if( dataVec.size() + sizeof(xbee_app_data::RoutingTableHdr)
                         + sizeof(xbee_app_data::PlanningEntry)*table.size()
@@ -312,7 +315,7 @@ sendPlanningDataTimerCB(void *arg)
                         memcpy(&dataVec[dataVec.size() - sizeof(PlanningEntry)],
                                 &plEntry, sizeof(PlanningEntry));
                     }
-                    cout << "byte count " << dataVec.size() << endl;
+                    LOG(INFO) << "byte count " << dataVec.size();
                 }
                 else
                 {
@@ -330,7 +333,7 @@ sendPlanningDataTimerCB(void *arg)
             }
         }
         /// now we care about the fragments
-        printf("generated msgs %lu\n", g_planningXbeeMsgs.size());
+	LOG(INFO) << "generated msgs " <<  g_planningXbeeMsgs.size();
         g_lastXbeePlanId++;
         uint8_t fgn = 0;
         FOREACH(jt, g_planningXbeeMsgs)
@@ -355,15 +358,17 @@ sendPlanningDataTimerCB(void *arg)
     {
         /// we don't need to encode again the xbee payload since the
         /// routing hasn't changed
-        printf("planning unchanged ...\n");
+      LOG(INFO) << "Planning unchanged ...";
     }
 
-    printf("sending %ld msgs\n", g_planningXbeeMsgs.size());
+    if( g_planningXbeeMsgs.size() )
+      LOG(INFO) << "sending " << g_planningXbeeMsgs.size() << " msgs";
     for(int i=0; i< g_planningXbeeMsgs.size(); i++)
-    {
-        printf("sending msgs %d out of %ld with size %lu\n", i+1,
-               g_planningXbeeMsgs.size(), g_planningXbeeMsgs[i].size() );
-        std::cout << +(g_planningXbeeMsgs[i][0]) << std::endl;
+      {
+	LOG(INFO) << "sending msgs " << (i+1)
+		  << " out of " << (int) g_planningXbeeMsgs.size()
+		  << " with size " << g_planningXbeeMsgs[i].size();
+	LOG(INFO) << +(g_planningXbeeMsgs[i][0]);
 
         memcpy(g_outBuf, &g_planningXbeeMsgs[i][0], g_planningXbeeMsgs[i].size());
         size_t buflen = g_planningXbeeMsgs[i].size();
@@ -374,19 +379,19 @@ sendPlanningDataTimerCB(void *arg)
 #ifndef NO_XBEE_TEST
         int retval = g_xbee->send(XBEE_BROADCAST_ADDR, txInfo, g_outBuf, buflen);
         if( retval == XbeeInterface::NO_ACK )
-        {
-            printf("send failed NOACK\n");
-        }
+	  {
+	    LOG(INFO) << "send failed NOACK";
+	  }
         else if( retval == XbeeInterface::TX_MAC_BUSY )
-        {
-            printf("send failed MACBUSY\n");
-        }
+	  {
+	    LOG(INFO) << "send failed MACBUSY";
+	  }
         else
-        {
-            printf("send OK\n");
-        }
+	  {
+	    LOG(INFO) << "send OK";
+	  }
 #endif
-    }
+      }
 
     pthread_mutex_unlock(&g_sendMutex);  /// Unlock the mutex
 }
@@ -395,7 +400,8 @@ void
 signalHandler( int signum )
 {
     g_abort = true;
-    printf("ending app...\n");
+    printf("Ending ...\n");
+    LOG(INFO) << "Ending app...";
     /// stop timers
     if( g_sendRoutingDataTimer )
     {
@@ -421,7 +427,7 @@ signalHandler( int signum )
     delete g_sendRoutingDataTimer;
     delete g_routingDriver;
     delete g_xbee;
-    printf("done.\n");
+    LOG(INFO) << "Clean exit";
     exit(signum);
 }
 
@@ -430,46 +436,56 @@ void
 receiveData(uint16_t addr, void *data, char rssi, timespec timestamp, size_t len)
 {
     using namespace xbee_app_data;
-    cout << "Got data from " << addr
-         << " rssi: " << +rssi << ") "
-         <<  " len: " << len << endl;
-    cout << "-----------------------" << endl;
-
+    LOG(INFO) << "Got data from " << addr
+	      << " rssi: " << +rssi << ") "
+	      <<  " len: " << len;
+    
     if (len > sizeof(Header))
     {
         Header header;
         memcpy(&header, data, sizeof(Header));
-        cout << "Header: " << header << endl;
+        LOG(INFO) << "Header: " << header;
 
         if (header.type == XBEEDATA_ENDNODEINFO )               /// Check the type of Header
         {
             /// Check the size of the packet
+	  LOG(INFO) << "Got EndNodeInfo";
             if(len == sizeof(Header) + sizeof(EndNodeInfo))     /// Packet is of proper size
             {
                 EndNodeInfo eInfo;
                 memcpy(&eInfo,
                        (unsigned char *)data + sizeof(Header),
                        sizeof(EndNodeInfo));
-                cout << "EndNodeInfo: " << eInfo << endl;
-                LOG(INFO) << "GPS Data Received: lat: " << eInfo.latitude << " lon: " << eInfo.longitude << " alt: " << eInfo.altitude << endl;
+                LOG(INFO) << "EndNodeInfo: " << eInfo;
+                LOG(INFO) << "GPS Data Received: lat: "
+			  << eInfo.latitude
+			  << " lon: "
+			  << eInfo.longitude
+			  << " alt: "
+			  << eInfo.altitude;
+		g_gpsDriver->notifyPos(header.src, eInfo.longitude,
+				       eInfo.latitude,
+				       eInfo.altitude,
+				       
+		
             }
-            else                                                /// Packet is not of proper size
+            else
             {
-                fprintf(stderr, "Invalid length for EndNodeInfo msg\n");
+	      LOG(INFO) << "Invalid length for EndNodeInfo msg";
             }
         }
 
 	if (header.type == XBEEDATA_FLOWINFO )  /// Check the type of Header
         {
-	  printf("Got FlowInfo msg\n");
+	  LOG(INFO) << "Got FlowInfo";
 	  if( len >= sizeof(Header) + sizeof(FlowInfoHdr) )
 	    {
 	      FlowInfoHdr fInfoHdr;
 	      memcpy(&fInfoHdr,
 		     (unsigned char *)data + sizeof(Header),
 		     sizeof(FlowInfoHdr));
-	      printf("got info for %d flows\n",
-		     fInfoHdr.nEntries);
+	      LOG(INFO) << "got info for "
+			<< fInfoHdr.nEntries << " flows";
 	      FlowInfoEntry fEntry;
 	      FlowList fList;
 	      char *ptr = (char *) data + sizeof(Header)+sizeof(FlowInfoHdr);
@@ -479,28 +495,27 @@ receiveData(uint16_t addr, void *data, char rssi, timespec timestamp, size_t len
 			 ptr,
 			 sizeof(FlowInfoEntry));
 		  ptr += sizeof(FlowInfoEntry);
-		  printf("FlowNotify %d %.2f\n",
-			 (int) fEntry.nodeId,
-			 fEntry.dataRate);
+		  LOG(INFO) << "Flow " << (int) fEntry.nodeId
+			    << " -> " << (int) header.src
+			    << " " << fEntry.dataRate;
 		  FlowEntry fe;
+		  fe.dst_addr.type = 'n';
+		  fe.dst_addr.value[0] = header.src;
 		  fe.src_addr.type = 'n';
-		  fe.src_addr.value[0] = header.src;
-		  fe.dst_addr.value[0] = fEntry.nodeId;
+		  fe.src_addr.value[0] = fEntry.nodeId;
 		  fe.data_rate = fEntry.dataRate;
 		  fList.push_back(fe);
 		}
-	      g_flowNotifier->notifyFlows(header.src, 0, fList);
+	      LOG(INFO) << "Notifying flows";
+	      g_flowNotifier->notifyFlows((int) header.src, 0, fList);
 	 
 	    }
 	  else
 	    {
-	      fprintf(stderr, "Invalid length for FlowInfo msg\n");
+	      LOG(INFO) << "Invalid length for FlowInfo msg";
 	    }
-
 	}
-
     }
-    cout << "-----------------------" << endl;
 }
 
 /////////////// Beginning of Main program //////////////////
@@ -510,8 +525,7 @@ int main(int argc, char * argv[])
     g_lastRoutingDataSent.timestamp = 0;
     g_lastPlanningDataSent.timestamp = 0;
 
-    /// Initialize Log
-    google::InitGoogleLogging(argv[0]);
+
 
     signal(SIGINT, signalHandler);      /// register signal
 
@@ -526,7 +540,15 @@ int main(int argc, char * argv[])
     const int     nodeId   = cl.follow(1, "--nodeid");
     const string  xbeeMode = cl.follow("xbee1", "--mode");
     const string  addrBook  = cl.follow("none", "--abook");
+    const string  logDir  = cl.follow("/tmp/", "--logdir");
 
+    /// Initialize Log
+    google::InitGoogleLogging(argv[0]);
+    FLAGS_logbufsecs = 0;
+    FLAGS_log_dir = logDir;
+    LOG(INFO) << "Logging initialized";
+
+    
     /// Xbee PARAMETERS
     XbeeInterfaceParam xbeePar;
     xbeePar.SourceAddress = nodeId;
@@ -543,36 +565,39 @@ int main(int argc, char * argv[])
         exit(-1);
     }
 
-    printf("Creating xbeeInterface\n");
-    fflush(stdout);
+    LOG(INFO) << "Creating xbee interface";
 
 #ifndef NO_XBEE_TEST
     /// create Xbee communication
     g_xbee = new XbeeInterface(xbeePar);
     if( g_xbee->isOK() )
+      {
         /// Listen for messages
         g_xbee->registerReceive(&receiveData);
+      }
     else
         return 1;
 #endif
 
     /// create routing Driver
-    g_routingDriver = new ROUTINGDriver("udpm://239.255.76.67:7667?ttl=1", "RNP2", true);
-
+    g_routingDriver = new ROUTINGDriver("udpm://239.255.76.67:7667?ttl=0", "RNP2", true);
     /// Periodically send the Routing Table
     g_sendRoutingDataTimer = new Timer(TIMER_SECONDS, sendRoutingDataTimerCB, NULL);
     g_sendRoutingDataTimer->startPeriodic(1);
-
     /// create planning Driver
-    g_planningDriver = new PLANNINGDriver("udpm://239.255.76.67:7667?ttl=1", "PLAN", true);
-
+    g_planningDriver = new PLANNINGDriver("udpm://239.255.76.67:7667?ttl=0", "PLAN", true);
     /// Periodically send the Plan
     g_sendPlanningDataTimer = new Timer(TIMER_SECONDS, sendPlanningDataTimerCB, NULL);
     g_sendPlanningDataTimer->startPeriodic(1);
-
-    g_flowNotifier = new FlowNotifier("udpm://239.255.76.67:7667?ttl=1", "iflow", false);
+    g_flowNotifier = new FlowNotifier("udpm://239.255.76.67:7667?ttl=0", "iflow", false);
+    g_gpsDriver = new GPSDriver("udpm://239.255.76.67:7667?ttl=0", "POSE", false);
+    LOG(INFO) << "drivers up";
+    
     if( addrBook != "none" )
-      g_flowNotifier->readAddressBook(addrBook);
+      {
+	g_flowNotifier->readAddressBook(addrBook);
+	LOG(INFO) << "read addressbook " << addrBook;
+      }
 
     /// Sleep
     for(;;)

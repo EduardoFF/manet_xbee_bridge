@@ -75,6 +75,9 @@ public:
 
 
     TimestampedGPSData data();
+    
+    void notifyPos(int nodeid, double lon, double lat, double alt, int epsg);
+  
 
 private:
     static uint64_t getTime();

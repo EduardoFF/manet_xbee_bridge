@@ -24,9 +24,6 @@ int g_nodeId;
 
 PLANNINGDriver *g_planningDriver;
 ROUTINGDriver *g_routingDriver;
-
-
-
 FlowNotifier *g_flowNotifier;
 GPSDriver *g_gpsDriver;
 Timer *g_endNodeInfoTimer;
@@ -67,8 +64,7 @@ flowInfoTimerCB(void *arg)
   if( g_abort )
     return;
 
-printf("flowInfoTimer\n");
-fflush(stdout);
+  LOG(INFO) << "flowInfoTimer triggered";
 
 
   /// lock the mutex first
@@ -107,15 +103,18 @@ fflush(stdout);
       ptr += sizeof(FlowInfoEntry);
       buflen += sizeof(FlowInfoEntry);
       fInfoHdr->nEntries+=1;
-      printf("Flow %d %.2f\n", fInfo.nodeId, fInfo.dataRate);
+      LOG(INFO) << "Flow " << fInfo.nodeId << " " <<  fInfo.dataRate;
     }
   if( !fInfoHdr->nEntries )
     {
-      printf("No active flows to notify\n");
+      LOG(INFO) << "No active flows to notify";
       return;
     }
-   else
-	printf("Notifying %d flows\n",fInfoHdr->nEntries);
+  else
+    {
+      LOG(INFO) << "Notifying "
+		<< fInfoHdr->nEntries << " flows";
+    }
 
     XbeeInterface::TxInfo txInfo;
     txInfo.reqAck  = false;
@@ -127,16 +126,15 @@ pthread_mutex_lock(&g_sendMutex);
     int retval = g_xbee->send(0xffff, txInfo, g_outBuf, buflen);
     if( retval == XbeeInterface::NO_ACK )
     {
-        printf("send failed NOACK\n");
+      LOG(INFO) << "send failed NOACK";
     }
     else if( retval == XbeeInterface::TX_MAC_BUSY )
     {
-        printf("send failed MACBUSY\n");
+      LOG(INFO) << "send failed MACBUSY";
     }
     else
     {
-        printf("send OK\n");
-        //LOG(INFO) << "gps Data Sent: lat: " << eInfo.latitude << ", lon:" << eInfo.longitude << ", alt: " << eInfo.altitude << endl;
+      LOG(INFO) << "send OK";
     }
 
     pthread_mutex_unlock(&g_sendMutex);
@@ -152,8 +150,7 @@ endNodeInfoTimerCB(void *arg)
 {
     if( g_abort )
         return;
-printf("endNodeInfoTimer\n");
-fflush(stdout);
+    LOG(INFO) << "endNodeInfoTimer triggered";
 
     /// lock the mutex first
     pthread_mutex_lock(&g_sendMutex);
@@ -172,6 +169,11 @@ fflush(stdout);
     eInfo.latitude  = gpsData.lat;
     eInfo.longitude = gpsData.lon;
     eInfo.altitude  = gpsData.alt;
+    LOG(INFO) << "Sending EndNodeInfo "
+	      << " " << eInfo.latitude
+	      << " " << eInfo.longitude
+	      << " " << eInfo.altitude;
+
     //  eInfo.dataRate  = g_dataRateMon->data();
 
     memcpy(g_outBuf+sizeof(Header), &eInfo, sizeof(EndNodeInfo));
@@ -184,16 +186,15 @@ fflush(stdout);
     int retval = g_xbee->send(0xffff, txInfo, g_outBuf, buflen);
     if( retval == XbeeInterface::NO_ACK )
     {
-        printf("send failed NOACK\n");
+      LOG(INFO) << "send failed NOACK";
     }
     else if( retval == XbeeInterface::TX_MAC_BUSY )
     {
-        printf("send failed MACBUSY\n");
+      LOG(INFO) << "send failed MACBUSY";
     }
     else
     {
-        printf("send OK\n");
-        LOG(INFO) << "gps Data Sent: lat: " << eInfo.latitude << ", lon:" << eInfo.longitude << ", alt: " << eInfo.altitude << endl;
+      LOG(INFO) << "send OK";
     }
 #endif
     pthread_mutex_unlock(&g_sendMutex);
@@ -204,6 +205,7 @@ signalHandler( int signum )
 {
     g_abort = true;
     printf("ending app...\n");
+    LOG(INFO) << "Ending app";
     /// stop timers
     if( g_endNodeInfoTimer )
     {
@@ -219,7 +221,8 @@ signalHandler( int signum )
 #ifndef NO_XBEE_TEST
     delete g_xbee;
 #endif
-    printf("done.\n");
+    LOG(INFO) << "Clean exit";
+
     exit(signum);
 }
 
@@ -229,15 +232,14 @@ receiveData(uint16_t addr, void *data,
             char rssi, timespec timestamp, size_t len)
 {
     using namespace xbee_app_data;
-    cout << "Got data from " << addr
+    LOG(INFO) << "Got data from " << addr
          << " rssi: " << +rssi << ") "
-         <<  " len: " << len << endl;
-    cout << "-----------------------" << endl;
+	      <<  " len: " << len;
     if (len > sizeof(Header))
     {
         Header header;
         memcpy(&header, data, sizeof(Header));
-        cout << "Header: " << +(header.type) << endl;
+        LOG(INFO) << "Header: " << +(header.type);
         if (header.type == XBEEDATA_ROUTING )
         {
             if(len >= sizeof(Header) + sizeof(Routing))
@@ -246,10 +248,10 @@ receiveData(uint16_t addr, void *data,
                 memcpy(&route,
                        (unsigned char *)data + sizeof(Header),
                        sizeof(Routing));
-                cout << "TabId: " << +(route.tabId) << endl;
+                LOG(INFO) << "TabId: " << +(route.tabId);
                 if( route.tabId > g_lastRoutingTableRcv )
                 {
-                    printf("NEW TREE %d\n", route.tabId);
+		  LOG(INFO) << "NEW TREE " <<  route.tabId;
                     /// we clear the routing table,
                     /// annotate the timestamp
                     g_routingDriver->clearData(0);
@@ -267,6 +269,7 @@ receiveData(uint16_t addr, void *data,
                 size_t bcnt = sizeof(Header) + sizeof(Routing);
                 if( len != bcnt + route.nbBytes )
                 {
+		  LOG(INFO) << "Error occurred";
                     fprintf(stderr, "Incorrect buffer length (%lu) should be %lu\n",
                             len, sizeof(Header) + sizeof(Routing) + route.nbBytes);
                     return;
@@ -283,8 +286,8 @@ receiveData(uint16_t addr, void *data,
                     RoutingTableHdr *rtHdr = (RoutingTableHdr*)ptr;
                     std::string nodedesc = getNodeDesc(rtHdr->nodeId);
                     int nentries = rtHdr->nEntries;
-                    std::cout << "TABLE FOR " << nodedesc
-                              << " with " << nentries << " entries" << endl;
+                    LOG(INFO) << "TABLE FOR " << nodedesc
+                              << " with " << nentries << " entries";
                     ptr+=sizeof(RoutingTableHdr);
                     bcnt+=sizeof(RoutingTableHdr);
                     for(int j=0; j<nentries;j++)
@@ -315,7 +318,7 @@ receiveData(uint16_t addr, void *data,
                 g_routingDriver->publishLCM();
                 if( g_lastRoutingFragments.size() == route.nbOfFrag )
                 {
-                    std::cout << "NEW TABLE " << g_routingDriver->data() << std::endl;
+		  LOG(INFO) << "NEW TABLE " << g_routingDriver->data();
                 }
             }
             else
@@ -332,7 +335,7 @@ receiveData(uint16_t addr, void *data,
                 memcpy(&plan,
                        (unsigned char *)data + sizeof(Header),
                        sizeof(Planning));
-                cout << "TabId: " << +(plan.tabId) << endl;
+                LOG(INFO) << "TabId: " << +(plan.tabId);
                 if( plan.tabId > g_lastPlanningTableRcv )
                 {
                     printf("NEW PLAN %d\n", plan.tabId);
@@ -369,8 +372,8 @@ receiveData(uint16_t addr, void *data,
                     PlanningTableHdr *rtHdr = (PlanningTableHdr*)ptr;
                     std::string nodedesc = getNodeDesc(rtHdr->nodeId);
                     int nentries = rtHdr->nEntries;
-                    std::cout << "TABLE FOR " << nodedesc
-                              << " with " << nentries << " entries" << endl;
+                    LOG(INFO) << "TABLE FOR " << nodedesc
+                              << " with " << nentries << " entries";
                     ptr+=sizeof(PlanningTableHdr);
                     bcnt+=sizeof(PlanningTableHdr);
                     for(int j=0; j<nentries;j++)
@@ -404,7 +407,7 @@ receiveData(uint16_t addr, void *data,
                 g_planningDriver->publishLCM();
                 if( g_lastPlanningFragments.size() == plan.nbOfFrag )
                 {
-                    std::cout << "NEW TABLE " << g_planningDriver->data() << std::endl;
+		  LOG(INFO) << "NEW TABLE " << g_planningDriver->data();
                 }
             }
             else
@@ -413,7 +416,6 @@ receiveData(uint16_t addr, void *data,
             }
         }
     }
-    cout << "-----------------------" << endl;
 }
 
 /////////////// Beginning of Main program //////////////////
@@ -422,8 +424,6 @@ int main(int argc, char * argv[])
 
     g_abort = false;
 
-    /// Initialize Log
-    google::InitGoogleLogging(argv[0]);
 
     /// register signal
     signal(SIGINT, signalHandler);
@@ -442,6 +442,13 @@ int main(int argc, char * argv[])
     const string  myIp   = cl.follow("none", "--ip");
     const string  myMac  = cl.follow("none", "--mac");
     const string  xbeeMode = cl.follow("xbee1", "--mode");
+    const string  logDir  = cl.follow("/tmp/", "--logdir");
+
+    /// Initialize Log
+    google::InitGoogleLogging(argv[0]);
+    FLAGS_logbufsecs = 0;
+    FLAGS_log_dir = logDir;
+    LOG(INFO) << "Logging initialized";
     
 
     XbeeInterfaceParam xbeePar;
@@ -466,7 +473,7 @@ int main(int argc, char * argv[])
 
     if( use_gpsd )
     {
-        printf("USING GPSD\n");
+      LOG(INFO)  << "USING GPSD";
         /// create gpsDriver connection
 	//        g_gpsDriver = new GPSDriver(true);
     }

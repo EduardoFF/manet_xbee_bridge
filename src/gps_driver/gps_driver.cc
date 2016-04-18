@@ -1,11 +1,16 @@
 #include "gps_driver.h"
 #include <sys/time.h>
+#include <lcm/lcm-cpp.hpp>
+#include "pose_t.hpp"
+#include <glog/logging.h>
 #define IT(c) __typeof((c).begin())
 #define FOREACH(i,c) for(__typeof((c).begin()) i=(c).begin();i!=(c).end();++i)
 
 
 
-GPSDriver::GPSDriver(const char * url,const string &channel,bool autorun):
+GPSDriver::GPSDriver(const char * url,
+		     const string &channel,
+		     bool handle):
     m_uselcm(true)
 {
     /// Create a new LCM instance
@@ -14,14 +19,16 @@ GPSDriver::GPSDriver(const char * url,const string &channel,bool autorun):
     m_lcmURL = url;
     /// Set LCM channel
     m_lcmChannel = channel;
-    /// FIXME: better outside?
-    if (isLCMReady())
-    {
-        subscribeToChannel(channel);
-    }
+    if( handle )
+      {
+	/// FIXME: better outside?
+	if (isLCMReady())
+	  {
+	    subscribeToChannel(channel);
+	  }
+	run();
+      }
     pthread_mutex_init(&m_mutex, NULL);
-    if( autorun )
-        run();
 }
 
 GPSDriver::GPSDriver(bool autorun):
@@ -55,8 +62,13 @@ GPSDriver::handleMessage(const lcm::ReceiveBuffer* rbuf,
 {
     uint64_t tt = getTime();
     //  uint8_t  rid = msg->robotid;
-    printf("GPSDriver: [%lud] got config \n", tt);
-
+    LOG(INFO) << "handlePoseMsg " << tt
+	      << " @ chan " << chan;
+    pthread_mutex_lock(&m_mutex);
+    m_latestData.lat = msg->position[0];
+    m_latestData.lon = msg->position[1];
+    m_latestData.alt = msg->position[2];
+    pthread_mutex_unlock(&m_mutex);
 }
 
 /// lock, copy, unlock, return
@@ -126,11 +138,26 @@ GPSDriver::subscribeToChannel(const string & channel)
 }
 
 void
+GPSDriver::notifyPos(int nodeid,
+		     double lon,
+		     double lat,
+		     double alt,
+		     int epsg)
+{
+  pose_t mymsg;
+  mymsg.robotid = nodeid;
+  mymsg.position[0] = lon;
+  mymsg.position[1] = lat;
+  mymsg.position[2] = alt;
+  /// here we transform to UTM
+  /// and then publish
+  m_lcm.publish(m_lcmChannel.c_str(), &mymsg);
+}
+void
 GPSDriver::internalThreadEntry()
 {
     while (true)
     {
-
         if( m_uselcm )
         {
             m_lcm.handle();

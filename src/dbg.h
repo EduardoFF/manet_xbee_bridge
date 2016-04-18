@@ -9,10 +9,20 @@
 #include <errno.h>
 #include <string.h>
 
+#define USE_GLOG_FOR_DEBUG 1
+
+#ifdef USE_GLOG_FOR_DEBUG
+#include <glog/logging.h>
+#endif
+
 #ifdef NDEBUG
 #define debug(M, ...)
 #else
+#ifdef USE_GLOG_FOR_DEBUG
+#define debug(M, ...) { static char dbuff[255]; sprintf(dbuff, "DEBUG %s:%d: " M "\n", __FILE__, __LINE__, ##__VA_ARGS__); LOG(INFO) << dbuff;}
+#else
 #define debug(M, ...) fprintf(stderr, "DEBUG %s:%d: " M "\n", __FILE__, __LINE__, ##__VA_ARGS__); fflush(stderr)
+#endif
 #endif
 
 #define clean_errno() (errno == 0 ? "None" : strerror(errno))
