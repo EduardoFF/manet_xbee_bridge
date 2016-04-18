@@ -46,6 +46,7 @@ vector< vector<uint8_t> > g_routingXbeeMsgs;
 TimestampedPLANNINGData g_lastPlanningDataSent;
 uint16_t g_lastXbeePlanId;
 vector< vector<uint8_t> > g_planningXbeeMsgs;
+int g_epsg;
 
 /// Mutex used to send one packet at a time
 pthread_mutex_t g_sendMutex;
@@ -466,6 +467,7 @@ receiveData(uint16_t addr, void *data, char rssi, timespec timestamp, size_t len
 		g_gpsDriver->notifyPos(header.src, eInfo.longitude,
 				       eInfo.latitude,
 				       eInfo.altitude,
+				       g_epsg);
 				       
 		
             }
@@ -541,6 +543,7 @@ int main(int argc, char * argv[])
     const string  xbeeMode = cl.follow("xbee1", "--mode");
     const string  addrBook  = cl.follow("none", "--abook");
     const string  logDir  = cl.follow("/tmp/", "--logdir");
+    g_epsg  = cl.follow(32632, "--epsg");
 
     /// Initialize Log
     google::InitGoogleLogging(argv[0]);

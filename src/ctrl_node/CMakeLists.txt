@@ -24,7 +24,9 @@ target_link_libraries(ctrl_node
   routing_driver
   planning_driver
   gps_driver
+  gps_client
   flow_notifier
+  gps
   ${Glog_LIBRARIES}
 #  xbeep.a
 #  xbee.a
