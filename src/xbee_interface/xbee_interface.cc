@@ -148,10 +148,14 @@ XbeeInterface::createConnection(uint16_t addr)
   #ifdef __XBEE_868
   xbeeAddr->addr64_enabled = 1;
   xbeeAddr->addr16_enabled = 0;
+  xbeeAddr->addr64[7] = 0xff;
+  xbeeAddr->addr64[6] = 0xff;
+  xbeeAddr->addr64[5] = 0;
+  xbeeAddr->addr64[4] = 0;
   xbeeAddr->addr64[3] = 0;
   xbeeAddr->addr64[2] = 0;
-  xbeeAddr->addr64[1] = ((addr >> 0) & 0xff);
-  xbeeAddr->addr64[0] = ((addr >> 8) & 0xff);
+  xbeeAddr->addr64[1] = 0;
+  xbeeAddr->addr64[0] = 0;
   debug("creating Data connection\n");
   MyConnection *con =  
     new MyConnection(this, "Data", xbeeAddr);
