@@ -99,7 +99,7 @@ fflush(stdout);
       
   FOREACH(it, fList )
     {
-      fInfo.nodeId =g_flowNotifier->getIdFromAddressBook(it->dst_addr);
+      fInfo.nodeId =g_flowNotifier->getIdFromAddressBook(it->src_addr);
       if( fInfo.nodeId <= 0)
 	continue;
       fInfo.dataRate = it->data_rate;
@@ -487,7 +487,7 @@ int main(int argc, char * argv[])
     g_planningDriver = new PLANNINGDriver("udpm://239.255.76.67:7667?ttl=1", "PLAN", false);
 
     g_endNodeInfoTimer = new Timer(TIMER_SECONDS, endNodeInfoTimerCB, NULL);
-    g_endNodeInfoTimer->startPeriodic(1);
+    //    g_endNodeInfoTimer->startPeriodic(1);
 
 
     g_flowInfoTimer = new Timer(TIMER_SECONDS, flowInfoTimerCB, NULL);
