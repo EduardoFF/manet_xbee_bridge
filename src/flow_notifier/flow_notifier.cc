@@ -20,13 +20,13 @@ FlowNotifier::readAddressBook(const std::string &fn_addrbook)
       node_addr ip_a, mac_a;
       if( parseIP(ip_addr, ip_a) )
 	{
-	  m_addrBookAddr[ip_a] = node_id;
-	  m_addrBookId[node_id] = ip_a;
+	  m_addrBookId[ip_a] = node_id;
+	  m_addrBookIp[node_id] = ip_a;
 	}
       if( parseMAC(mac_addr, mac_a) )
 	{
-	  m_addrBookAddr[mac_a] = node_id;
-	  m_addrBookId[node_id] = mac_a;
+	  m_addrBookId[mac_a] = node_id;
+	  m_addrBookMac[node_id] = mac_a;
 	}
     }
 }
@@ -34,11 +34,57 @@ FlowNotifier::readAddressBook(const std::string &fn_addrbook)
 int
 FlowNotifier::getIdFromAddressBook(node_addr &addr)
 {
-  IT(m_addrBookAddr) it = m_addrBookAddr.find(addr);
-  if( it == m_addrBookAddr.end())
+  IT(m_addrBookId) it = m_addrBookId.find(addr);
+  if( it == m_addrBookId.end())
     return -1;
   else
     return it->second;
+}
+
+node_addr
+FlowNotifier::getIpFromAddressBook(int node_id)
+{
+  node_addr naddr;
+  naddr.type = 0;
+  IT(m_addrBookIp) it = m_addrBookIp.find(node_id);
+  if( it == m_addrBookIp.end())
+    return naddr;
+  else
+    {
+      return it->second;
+    }
+}
+
+bool
+FlowNotifier::notifyFlows(int nid, uint64_t timestamp, FlowList &flist)
+{
+  flow_list_t mymsg;
+  node_addr ipaddr = getIpFromAddressBook(nid);
+  if( ipaddr.type != 'i' )
+    return false;
+  mymsg.addr = ipaddr.toString();
+  mymsg.timestamp = timestamp;
+  mymsg.n = flist.size();
+  mymsg.flows.resize(mymsg.n);
+  int ix=0;
+  for(int i=0; i< flist.size(); i++)
+    {
+      FlowEntry &fe = flist[i];
+      flow_entry_t fentry;
+      ///
+      std::string src_addr_s = fe.src_addr.toString();
+      std::string dst_addr_s = fe.dst_addr.toString();
+      
+	
+      fentry.src_addr = src_addr_s;
+      fentry.dst_addr = dst_addr_s;
+      fentry.pkt_count = fe.pkt_count;
+      fentry.byte_count = fe.byte_count;
+      fentry.data_rate = fe.data_rate;
+      fentry.last_activity = fe.last_activity;
+      mymsg.flows[ix++]=fentry;
+    }
+  m_lcm.publish(m_lcmChannel.c_str(), &mymsg);
 }
 
 FlowList

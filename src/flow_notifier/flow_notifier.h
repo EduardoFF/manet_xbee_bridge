@@ -48,6 +48,40 @@ struct node_addr
 {
   char    type;
   uint8_t value[6];
+  string toString()
+  {
+    if( type == 'i' )
+      {
+	char ips[15];
+	sprintf(ips, "%d.%d.%d.%d",
+		value[0],
+		value[1],
+		value[2],
+		value[3]);
+	return ips;
+      }
+    else if( type == 'm' )
+      {
+	char macs[16];
+	sprintf(macs, "%02x:%02x:%02x:%02x:%02x:%02x",
+		value[0],
+		value[1],
+		value[2],
+		value[3],
+		value[4],
+		value[5]);
+
+	return macs;
+      }
+    else if( type == 'n' )
+      {
+	char nid[3];
+	sprintf(nid,"%d", (int) value[0]);
+	return nid;
+      }
+    else
+      return "INVALID";
+  }
 };
 
 struct NodeAddrComp
@@ -99,16 +133,19 @@ public:
 
     bool run();
     FlowList getFlows(int dt);
+    bool notifyFlows(int node_id, uint64_t timestamp, FlowList &);
 
     void handleMessage(const lcm::ReceiveBuffer* rbuf,
                        const std::string& chan,
                        const flow_list_t* msg);
 
     //    FlowList data();
-    AddressBookById   m_addrBookId;
-    AddressBookByAddr m_addrBookAddr;
+    AddressBookById   m_addrBookIp, m_addrBookMac;
+    AddressBookByAddr m_addrBookId;
     void readAddressBook(const std::string &fn_addrbook);
     int getIdFromAddressBook(node_addr &addr);
+    node_addr getIpFromAddressBook(int node_id);
+      
     
       
       

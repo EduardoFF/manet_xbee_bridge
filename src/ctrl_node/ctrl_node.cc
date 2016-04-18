@@ -9,6 +9,7 @@
 #include "timer.h"
 #include <csignal>
 #include <glog/logging.h>
+#include "flow_notifier/flow_notifier.h"
 
 using namespace std;
 
@@ -27,6 +28,10 @@ XbeeInterface *g_xbee;
 
 ROUTINGDriver *g_routingDriver;
 Timer *g_sendRoutingDataTimer;
+
+// to make xbee - LCM bridge
+FlowNotifier *g_flowNotifier;
+
 
 PLANNINGDriver *g_planningDriver;
 Timer *g_sendPlanningDataTimer;
@@ -466,6 +471,7 @@ receiveData(uint16_t addr, void *data, char rssi, timespec timestamp, size_t len
 	      printf("got info for %d flows\n",
 		     fInfoHdr.nEntries);
 	      FlowInfoEntry fEntry;
+	      FlowList fList;
 	      char *ptr = (char *) data + sizeof(Header)+sizeof(FlowInfoHdr);
 	      for(int i=0; i< fInfoHdr.nEntries;i++)
 		{
@@ -476,7 +482,15 @@ receiveData(uint16_t addr, void *data, char rssi, timespec timestamp, size_t len
 		  printf("FlowNotify %d %.2f\n",
 			 (int) fEntry.nodeId,
 			 fEntry.dataRate);
+		  FlowEntry fe;
+		  fe.src_addr.type = 'n';
+		  fe.src_addr.value[0] = header.src;
+		  fe.dst_addr.value[0] = fEntry.nodeId;
+		  fe.data_rate = fEntry.dataRate;
+		  fList.push_back(fe);
 		}
+	      g_flowNotifier->notifyFlows(header.src, 0, fList);
+	 
 	    }
 	  else
 	    {
@@ -505,11 +519,13 @@ int main(int argc, char * argv[])
     GetPot   cl(argc, argv);
     if(cl.search(2, "--help", "-h") ) print_help(cl[0]);
     cl.init_multiple_occurrence();
+    cl.enable_loop();
+	
     const string  xbeeDev  = cl.follow("/dev/ttyUSB0", "--dev");
     const int     baudrate = cl.follow(57600, "--baud");
     const int     nodeId   = cl.follow(1, "--nodeid");
     const string  xbeeMode = cl.follow("xbee1", "--mode");
-    cl.enable_loop();
+    const string  addrBook  = cl.follow("none", "--abook");
 
     /// Xbee PARAMETERS
     XbeeInterfaceParam xbeePar;
@@ -553,6 +569,10 @@ int main(int argc, char * argv[])
     /// Periodically send the Plan
     g_sendPlanningDataTimer = new Timer(TIMER_SECONDS, sendPlanningDataTimerCB, NULL);
     g_sendPlanningDataTimer->startPeriodic(1);
+
+    g_flowNotifier = new FlowNotifier("udpm://239.255.76.67:7667?ttl=1", "iflow", false);
+    if( addrBook != "none" )
+      g_flowNotifier->readAddressBook(addrBook);
 
     /// Sleep
     for(;;)
