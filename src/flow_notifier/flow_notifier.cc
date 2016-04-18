@@ -189,6 +189,10 @@ FlowNotifier::handleMessage(const lcm::ReceiveBuffer* rbuf,
     for(int i = 0; i < msg->n; i++)
     {
       FlowEntry f_entry;
+      f_entry.data_rate = msg->flows[i].data_rate;
+      f_entry.byte_count = msg->flows[i].byte_count;
+      f_entry.pkt_count = msg->flows[i].pkt_count;
+      f_entry.last_activity = msg->flows[i].last_activity;
       
       if( isIPAddress(msg->flows[i].src_addr) &&
 	  isIPAddress(msg->flows[i].dst_addr) )
