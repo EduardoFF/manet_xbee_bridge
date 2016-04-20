@@ -12,6 +12,7 @@ ETH=eth0
 BRIDGED=0
 QUIET=0
 CLICKAPP=RNP_PKGclick
+USE_IW=0
 
 print_help()
 {
@@ -44,7 +45,10 @@ do
 	    QUIET=1
 	    shift
 	    ;;
-
+	--iw)
+	    USE_IW=1
+	    shift
+	    ;;
 	--eth)
 	    ETH="$2"
 	    shift
@@ -95,9 +99,14 @@ if [ "${BRIDGED}" != 0 ]; then
 fi
 
 #echo ${WLANM}
+SETUP_WLAN_SCRIPT=setup_wlan
+if [ "${USE_IW}" != 0 ]; then
+    echo "using iw script"
+    SETUP_WLAN_SCRIPT=setup_wlan_iw
+fi
 
 
-setup_wlan ${WLAN} ${IPADDR}/${NETMASK} ${CHANNEL} ${TXPOWER} 
+${SETUP_WLAN_SCRIPT} ${WLAN} ${IPADDR}/${NETMASK} ${CHANNEL} ${TXPOWER} 
 
 ip route del to ${IPPREFIX}.0/${NETMASK}
 route add -net 224.0.0.0 netmask 240.0.0.0 dev lo

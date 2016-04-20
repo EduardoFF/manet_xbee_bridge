@@ -19,6 +19,39 @@ IPWITHMASK=$2
 CHAN=$3
 POWER=$4
 
+case "$CHAN" in
+    1)  FREQ=2412
+	;;
+    2)  FREQ=2417
+	;;
+    3)  FREQ=2422
+	;;
+    4)  FREQ=2427
+	;;
+    5)  FREQ=2432
+	;;
+    6)  FREQ=2437
+	;;
+    7)  FREQ=2442
+	;;
+    8)  FREQ=2447
+	;;
+    9)  FREQ=2452
+	;;
+    10)  FREQ=2457
+	 ;;
+    11)  FREQ=2462
+	 ;;
+    12)  FREQ=2467
+	 ;;
+    13)  FREQ=2472
+	 ;;
+    14)  FREQ=2484
+	 ;;
+    *) echo "Unknown channel"
+       exit 
+       ;;
+esac
 
 function cleanup()
 {
@@ -45,8 +78,11 @@ cleanup
 #
 #iwconfig ${INTERFACE} mode ad-hoc
 iw ${INTERFACE} set type ibss
-iw wlan0 ibss join ADHOC
-iw wlan0 set channel ${CHAN}
+echo "1"
+ifconfig ${INTERFACE} up
+iw ${INTERFACE} ibss join ADHOC ${FREQ}
+echo "2"
+#iw wlan0 set channel ${CHAN}
 
 #iwconfig ${INTERFACE} channel ${CHAN}
 #iwconfig ${INTERFACE} essid 'ADHOC' ap 06:02:03:04:05:06
@@ -58,10 +94,10 @@ ip link set ${INTERFACE} up
 #ifconfig ${INTERFACE} up
 # TX power in dBm
 #iwconfig ${INTERFACE} txpower ${POWER}
-iw dev ${INTERFACE} set txpower ${POWER}
+#iw dev ${INTERFACE} set txpower ${POWER}
 #
 #iwconfig ${INTERFACE} rts 2400
-iw ${INTERFACE} set rts 2400
+#iw ${INTERFACE} set rts 2400
 #iwconfig ${INTERFACE} rts 0
 #iwconfig ${INTERFACE} rate 54M
 if [ "${DO_FISH}" == "1" ];
