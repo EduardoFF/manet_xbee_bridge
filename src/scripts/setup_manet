@@ -91,11 +91,14 @@ IPPREFIX=10.42.43
 NETMASK=24
 
 IPADDR=${IPPREFIX}.${NODEID}
+ETHM=""
+ETHIPADDR=""
 WLANM=`cat /sys/class/net/${WLAN}/address`
 if [ "${BRIDGED}" != 0 ]; then
     echo "bridged mode"
     CLICKAPP=RNP_CLIENT_PKGclick
-    ETHMAC=`cat /sys/class/net/${ETH}/address`
+    ETHIPADDR=$(ip addr | grep inet | grep ${ETH} | awk -F" " '{print $2}' | sed -e 's/\/.*$//')
+    ETHM=`cat /sys/class/net/${ETH}/address`
 fi
 
 #echo ${WLANM}
@@ -118,7 +121,7 @@ CLICKLOGFILE="/logs/${CTIME}-click.log"
 CLICKCURRENTLOG="/logs/click.log"
 mkdir -p /logs/click_dumps/${CTIME}
 
-cd /logs/click_dumps/${CTIME} && ${CLICKAPP} WLANMAC=${WLANM} WLANINTERFACE=${WLAN} ADHOCIP=${IPADDR}/${NETMASK} ${CLICKSCRIPT} &> ${CLICKLOGFILE} &
+cd /logs/click_dumps/${CTIME} && ${CLICKAPP} WLANMAC=${WLANM} WLANINTERFACE=${WLAN} ADHOCIP=${IPADDR}/${NETMASK} ETHIP=${ETHIPADDR} ETHMAC=${ETHM} ${CLICKSCRIPT} &> ${CLICKLOGFILE} &
 ln -f -s ${CLICKLOGFILE} ${CLICKCURRENTLOG}
 sleep 5
 if [ -n "${INITROUTES}" ]; then
