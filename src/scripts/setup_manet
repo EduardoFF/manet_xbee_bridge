@@ -95,12 +95,11 @@ ETHM=""
 ETHIPADDR=""
 WLANM=`cat /sys/class/net/${WLAN}/address`
 if [ "${BRIDGED}" != 0 ]; then
-    echo "bridged mode"
     CLICKAPP=RNP_CLIENT_PKGclick
     ETHIPADDR=$(ip addr | grep inet | grep ${ETH} | awk -F" " '{print $2}' | sed -e 's/\/.*$//')
     ETHM=`cat /sys/class/net/${ETH}/address`
+    echo "bridged mode on ${ETH} - ${ETHIPADDR} ${ETHM}"
 fi
-
 #echo ${WLANM}
 SETUP_WLAN_SCRIPT=setup_wlan
 if [ "${USE_IW}" != 0 ]; then
@@ -111,7 +110,9 @@ fi
 
 ${SETUP_WLAN_SCRIPT} ${WLAN} ${IPADDR}/${NETMASK} ${CHANNEL} ${TXPOWER} 
 
+if [ "${BRIDGED}" != 0 ]; then
 ip route del to ${IPPREFIX}.0/${NETMASK}
+fi
 route add -net 224.0.0.0 netmask 240.0.0.0 dev lo
 
 
@@ -119,10 +120,17 @@ CTIME=$(env TZ=":Europe/Rome" date +%Y%m%d_%H%M%S)
 export CTIME
 CLICKLOGFILE="/logs/${CTIME}-click.log"
 CLICKCURRENTLOG="/logs/click.log"
-mkdir -p /logs/click_dumps/${CTIME}
+CLICKDUMPFOLDER=/logs/click_dumps/${CTIME}
+CLICKCURRENTDUMP=/logs/click_dumps/current
+mkdir -p ${CLICKDUMPFOLDER}
+rm -f ${CLICKCURRENTDUMP}
 
-cd /logs/click_dumps/${CTIME} && ${CLICKAPP} WLANMAC=${WLANM} WLANINTERFACE=${WLAN} ADHOCIP=${IPADDR}/${NETMASK} ETHIP=${ETHIPADDR} ETHMAC=${ETHM} ${CLICKSCRIPT} &> ${CLICKLOGFILE} &
+cd ${CLICKDUMPFOLDER} && ${CLICKAPP} WLANMAC=${WLANM} \
+WLANINTERFACE=${WLAN} ADHOCIP=${IPADDR}/${NETMASK} \
+ETHINTERFACE=${ETH} ETHIP=${ETHIPADDR}/${NETMASK} ETHMAC=${ETHM} \
+${CLICKSCRIPT} &> ${CLICKLOGFILE} &
 ln -f -s ${CLICKLOGFILE} ${CLICKCURRENTLOG}
+ln -f -s ${CLICKDUMPFOLDER} ${CLICKCURRENTDUMP}
 sleep 5
 if [ -n "${INITROUTES}" ]; then
     echo "sending default routes ..."
