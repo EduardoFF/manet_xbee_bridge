@@ -210,7 +210,8 @@ signalHandler( int signum )
     if( g_endNodeInfoTimer )
     {
         g_endNodeInfoTimer->stop();
-        while( g_endNodeInfoTimer->isRunning() )
+	int cnt=10;
+        while( g_endNodeInfoTimer->isRunning() && cnt--)
         {
             sleep(1);
             g_endNodeInfoTimer->stop();
