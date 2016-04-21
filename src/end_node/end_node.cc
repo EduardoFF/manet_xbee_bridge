@@ -218,6 +218,17 @@ signalHandler( int signum )
             g_endNodeInfoTimer->stop();
         }
     }
+    if( g_flowInfoTimer )
+    {
+        g_flowInfoTimer->stop();
+	int cnt=10;
+        while( g_flowInfoTimer->isRunning() && cnt--)
+        {
+            sleep(1);
+            g_flowInfoTimer->stop();
+        }
+    }
+    
     delete g_endNodeInfoTimer;
     delete g_gpsDriver;
 #ifndef NO_XBEE_TEST
