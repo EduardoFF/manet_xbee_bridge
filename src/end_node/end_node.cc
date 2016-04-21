@@ -64,7 +64,7 @@ flowInfoTimerCB(void *arg)
   if( g_abort )
     return;
 
-  LOG(INFO) << "flowInfoTimer triggered";
+  DLOG(INFO) << "flowInfoTimer triggered";
 
 
   /// lock the mutex first
@@ -86,6 +86,7 @@ flowInfoTimerCB(void *arg)
       LOG(INFO) << "No flows to notify";
       return;
     }
+  LOG(INFO) << "Got some " << fList.size() << " flows to notify";
 
   FlowInfoHdr *fInfoHdr = (FlowInfoHdr *) (g_outBuf+sizeof(Header));
   fInfoHdr->nEntries=0;

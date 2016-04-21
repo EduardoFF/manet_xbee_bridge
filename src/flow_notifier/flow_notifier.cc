@@ -142,8 +142,8 @@ operator<<(std::ostream &os, const node_addr &addr)
   else if( addr.type == 'm' )
     {
       os << "MAC ";
-      char macs[16];
-      sprintf(macs, "%02x:%02x:%02x:%02x:%02x:%02x",
+      char macs[20];
+      sprintf(macs, "%02X:%02X:%02X:%02X:%02X:%02X",
 	      addr.value[0],
 	      addr.value[1],
 	      addr.value[2],
@@ -212,14 +212,15 @@ FlowNotifier::handleMessage(const lcm::ReceiveBuffer* rbuf,
       if( isIPAddress(msg->flows[i].src_addr) &&
 	  isIPAddress(msg->flows[i].dst_addr) )
 	{
-	  printf("is IP addr\n");
+	  //	  printf("is IP addr\n");
 	  if( !parseIP(msg->flows[i].src_addr, f_entry.src_addr) ||
 	      !parseIP(msg->flows[i].dst_addr, f_entry.dst_addr) )
 	    {
-	      printf("parsing error\n");
+	      //  printf("parsing error\n");
 	    }
 	  else
 	    {
+	      //LOG(INFO) << "Parsing OK";
 	      cout << f_entry.src_addr << endl;
 	      m_flowBySrc[f_entry.src_addr][f_entry.dst_addr] = f_entry;
 	      m_flowByDst[f_entry.dst_addr][f_entry.src_addr] = f_entry;	
@@ -230,22 +231,22 @@ FlowNotifier::handleMessage(const lcm::ReceiveBuffer* rbuf,
 	if(isMACAddress(msg->flows[i].src_addr) &&
 	   isMACAddress(msg->flows[i].dst_addr) )
 	  {
-	    printf("is MAC addr\n");
+	    //printf("is MAC addr\n");
 	    if ( !parseMAC(msg->flows[i].src_addr, f_entry.src_addr) ||
 		 !parseMAC(msg->flows[i].dst_addr, f_entry.dst_addr) )
 	      {
-		printf("parsing error for MAC address\n");
+		//	printf("parsing error for MAC address\n");
 	      }
 	    else
 	      {
-		cout << f_entry.src_addr << endl;
+		//	LOG(INFO) << "Parsing OK";
+		//cout << f_entry.src_addr << endl;
 		m_flowBySrc[f_entry.src_addr][f_entry.dst_addr] = f_entry;
 		m_flowByDst[f_entry.dst_addr][f_entry.src_addr] = f_entry;
+		//LOG(INFO) << "Parsing OK2";
 	      }
 	  }
     }
-    pthread_mutex_lock(&m_mutex);
-    pthread_mutex_unlock(&m_mutex);
 }
 
 
@@ -316,6 +317,7 @@ FlowNotifier::parseMAC(const std::string &ss, node_addr &addr)
   addr.type = 0;
   for (s = begin; s != end; ++s) {
     int digit;
+    //    LOG(INFO) <<"parsing " << *s;
     if (*s >= '0' && *s <= '9')
       digit = *s - '0';
     else if (*s >= 'a' && *s <= 'f')
@@ -335,6 +337,7 @@ FlowNotifier::parseMAC(const std::string &ss, node_addr &addr)
 
     if (p == 2 || d == 6)
       break;
+    //    LOG(INFO) << "add.value " << d;
    addr.value[d] = (p ? addr.value[d] << 4 : 0) + digit;
     ++p;
   }

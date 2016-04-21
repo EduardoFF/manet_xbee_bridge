@@ -52,7 +52,7 @@ struct node_addr
   {
     if( type == 'i' )
       {
-	char ips[15];
+	char ips[20];
 	sprintf(ips, "%d.%d.%d.%d",
 		value[0],
 		value[1],
@@ -62,7 +62,7 @@ struct node_addr
       }
     else if( type == 'm' )
       {
-	char macs[16];
+	char macs[20];
 	sprintf(macs, "%02x:%02x:%02x:%02x:%02x:%02x",
 		value[0],
 		value[1],
@@ -76,7 +76,7 @@ struct node_addr
     else if( type == 'n' )
       {
 	char nid[3];
-	sprintf(nid,"%d", (int) value[0]);
+	sprintf(nid,"%d", (uint8_t) value[0]);
 	return nid;
       }
     else
