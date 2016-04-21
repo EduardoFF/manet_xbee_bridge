@@ -65,7 +65,10 @@ class GPSDriver
 public:
   /// constructor for using gpsd client
     GPSDriver(bool autorun);
-    GPSDriver(const char * url, const string &channel, bool autorun);
+    GPSDriver(const char * url,
+	      const string &channel,
+	      bool handle,
+	      bool with_gpsd);
 
     bool run();
 
@@ -90,7 +93,7 @@ private:
     lcm::LCM m_lcm;
 
     bool m_gpsdOk;
-    GPSDClient m_gpsdClient;
+    GPSDClient *m_gpsdClient;
 
 
     pthread_mutex_t m_mutex; /** Mutex to control the access to member variables **/

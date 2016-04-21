@@ -10,7 +10,8 @@
 
 GPSDriver::GPSDriver(const char * url,
 		     const string &channel,
-		     bool handle):
+		     bool handle,
+		     bool with_gpsd):
     m_uselcm(true)
 {
     /// Create a new LCM instance
@@ -27,6 +28,15 @@ GPSDriver::GPSDriver(const char * url,
 	    subscribeToChannel(channel);
 	  }
 	run();
+      }
+    if( with_gpsd )
+      {
+	m_gpsdClient = new GPSDClient();
+	m_gpsdOk = true;
+      }
+    else
+      {
+	m_gpsdOk = false;
       }
     pthread_mutex_init(&m_mutex, NULL);
 }
@@ -166,7 +176,7 @@ GPSDriver::internalThreadEntry()
             if( m_gpsdOk ){
                 printf("doing gpsd ...\n");
                 gps gpsCoordinates;
-                gpsCoordinates = m_gpsdClient.getGPS();
+                gpsCoordinates = m_gpsdClient->getGPS();
                 if ((gpsCoordinates.x != 0) | (gpsCoordinates.y != 0) | (gpsCoordinates.z != 0 ))
                 {
                     m_latestData.lat = gpsCoordinates.x;

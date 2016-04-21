@@ -83,7 +83,7 @@ flowInfoTimerCB(void *arg)
   FlowList fList = g_flowNotifier->getFlows(2000);
   if( !fList.size()  )
     {
-      printf("No flows to notify\n");
+      LOG(INFO) << "No flows to notify";
       return;
     }
 
@@ -442,7 +442,7 @@ int main(int argc, char * argv[])
     const string  addrBook  = cl.follow("none", "--abook");
     const string  myIp   = cl.follow("none", "--ip");
     const string  myMac  = cl.follow("none", "--mac");
-    const string  xbeeMode = cl.follow("xbee1", "--mode");
+    const string  xbeeMode = cl.follow("xbee5", "--mode");
     const string  logDir  = cl.follow("/tmp/", "--logdir");
 
     /// Initialize Log

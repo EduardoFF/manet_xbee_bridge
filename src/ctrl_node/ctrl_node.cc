@@ -407,7 +407,8 @@ signalHandler( int signum )
     if( g_sendRoutingDataTimer )
     {
         g_sendRoutingDataTimer->stop();
-        while( g_sendRoutingDataTimer->isRunning() )
+	int cnt=10;
+        while( g_sendRoutingDataTimer->isRunning() && --cnt)
         {
             sleep(1);
             g_sendRoutingDataTimer->stop();
@@ -416,7 +417,8 @@ signalHandler( int signum )
     if( g_sendPlanningDataTimer )
     {
         g_sendPlanningDataTimer->stop();
-        while( g_sendPlanningDataTimer->isRunning() )
+	int cnt=10;
+        while( g_sendPlanningDataTimer->isRunning() && --cnt)
         {
             sleep(1);
             g_sendPlanningDataTimer->stop();
@@ -540,7 +542,7 @@ int main(int argc, char * argv[])
     const string  xbeeDev  = cl.follow("/dev/ttyUSB0", "--dev");
     const int     baudrate = cl.follow(57600, "--baud");
     const int     nodeId   = cl.follow(1, "--nodeid");
-    const string  xbeeMode = cl.follow("xbee1", "--mode");
+    const string  xbeeMode = cl.follow("xbee5", "--mode");
     const string  addrBook  = cl.follow("none", "--abook");
     const string  logDir  = cl.follow("/tmp/", "--logdir");
     g_epsg  = cl.follow(32632, "--epsg");
@@ -593,7 +595,7 @@ int main(int argc, char * argv[])
     g_sendPlanningDataTimer = new Timer(TIMER_SECONDS, sendPlanningDataTimerCB, NULL);
     g_sendPlanningDataTimer->startPeriodic(1);
     g_flowNotifier = new FlowNotifier("udpm://239.255.76.67:7667?ttl=0", "iflow", false);
-    g_gpsDriver = new GPSDriver("udpm://239.255.76.67:7667?ttl=0", "POSE", false);
+    g_gpsDriver = new GPSDriver("udpm://239.255.76.67:7667?ttl=0", "POSE", false, false);
     LOG(INFO) << "drivers up";
     
     if( addrBook != "none" )
