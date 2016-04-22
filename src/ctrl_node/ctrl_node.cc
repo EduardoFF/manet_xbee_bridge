@@ -489,7 +489,7 @@ receiveData(uint16_t addr, void *data, char rssi, timespec timestamp, size_t len
 		     (unsigned char *)data + sizeof(Header),
 		     sizeof(FlowInfoHdr));
 	      LOG(INFO) << "got info for "
-			<< fInfoHdr.nEntries << " flows";
+			<< +fInfoHdr.nEntries << " flows";
 	      FlowInfoEntry fEntry;
 	      FlowList fList;
 	      char *ptr = (char *) data + sizeof(Header)+sizeof(FlowInfoHdr);
@@ -594,7 +594,7 @@ int main(int argc, char * argv[])
     /// Periodically send the Plan
     g_sendPlanningDataTimer = new Timer(TIMER_SECONDS, sendPlanningDataTimerCB, NULL);
     g_sendPlanningDataTimer->startPeriodic(1);
-    g_flowNotifier = new FlowNotifier("udpm://239.255.76.67:7667?ttl=0", "iflow", false);
+    g_flowNotifier = new FlowNotifier("udpm://239.255.76.67:7667?ttl=0", "iflowip", false);
     g_gpsDriver = new GPSDriver("udpm://239.255.76.67:7667?ttl=0", "POSE", false, false);
     LOG(INFO) << "drivers up";
     
