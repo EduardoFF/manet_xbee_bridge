@@ -145,6 +145,9 @@ public:
     void readAddressBook(const std::string &fn_addrbook);
     int getIdFromAddressBook(node_addr &addr);
     node_addr getIpFromAddressBook(int node_id);
+    bool isRunning(){ return m_running;}
+    bool stop(){ m_abort=true;}
+    ~FlowNotifier();
       
     
       
@@ -166,6 +169,9 @@ private:
 
     pthread_mutex_t m_mutex; /** Mutex to control the access to member variables**/
     pthread_t m_thread; /** Thread **/
+
+    bool m_running;
+    bool m_abort;
 
     inline bool isLCMReady();
     inline void subscribeToChannel(const string & channel) ;

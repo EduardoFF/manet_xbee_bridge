@@ -20,6 +20,8 @@ GPSDriver::GPSDriver(const char * url,
     m_lcmURL = url;
     /// Set LCM channel
     m_lcmChannel = channel;
+    m_running = false;
+    m_abort=false;
     if( handle )
       {
 	/// FIXME: better outside?
@@ -62,6 +64,7 @@ bool
 GPSDriver::run()
 {
     int status = pthread_create(&m_thread, NULL, internalThreadEntryFunc, this);
+    m_running=true;
     return (status == 0);
 }
 
@@ -187,5 +190,14 @@ GPSDriver::internalThreadEntry()
                 printf("Latest GPS data: %f %f %f\n", m_latestData.lat, m_latestData.lon, m_latestData.alt);
             }
         }
+    }
+}
+
+GPSDriver::~GPSDriver()
+{
+  if( isRunning() )
+    {
+      stop();
+      pthread_join(m_thread,NULL);
     }
 }

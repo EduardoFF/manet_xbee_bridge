@@ -81,7 +81,7 @@ public:
     
     void notifyPos(int nodeid, double lon, double lat, double alt, int epsg);
   
-
+    ~GPSDriver();
 private:
     static uint64_t getTime();
     static std::string getTimeStr();
@@ -93,6 +93,8 @@ private:
     lcm::LCM m_lcm;
 
     bool m_gpsdOk;
+    bool m_running;
+    bool m_abort;
     GPSDClient *m_gpsdClient;
 
 
@@ -100,6 +102,8 @@ private:
     pthread_t m_thread;     /** Thread **/
 
     inline bool isLCMReady();
+    bool isRunning(){ return m_running;}
+    bool stop(){ m_abort=true;}
     inline void subscribeToChannel(const string & channel) ;
     static void * internalThreadEntryFunc(void * ptr)
     {
@@ -108,6 +112,7 @@ private:
     }
 
     void internalThreadEntry();
+
 
 
 };

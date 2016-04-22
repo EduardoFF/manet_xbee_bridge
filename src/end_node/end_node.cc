@@ -28,6 +28,7 @@ FlowNotifier *g_flowNotifier;
 GPSDriver *g_gpsDriver;
 Timer *g_endNodeInfoTimer;
 Timer *g_flowInfoTimer;
+Timer *g_resetXbeeTimer;
 char g_outBuf[130];
 bool g_abort;
 
@@ -56,6 +57,21 @@ getNodeDesc(uint8_t nid)
     return ss.str();
 }
 
+
+void
+stopTimer(Timer *timer)
+{
+    if( timer )
+    {
+        timer->stop();
+	int cnt=10;
+        while( timer->isRunning() && cnt--)
+        {
+            sleep(1);
+            timer->stop();
+        }
+    }
+}
 
 ///// here we send the node info packet /////
 void
@@ -201,6 +217,16 @@ endNodeInfoTimerCB(void *arg)
     pthread_mutex_unlock(&g_sendMutex);
 }
 
+
+void
+resetXbeeTimerCB(void *arg)
+{
+    if( g_abort )
+        return;
+    LOG(INFO) << "Resetting Xbee ...";
+    g_xbee->sendReset();
+    LOG(INFO) << "Reset done.";
+}
 void
 signalHandler( int signum )
 {
@@ -208,29 +234,17 @@ signalHandler( int signum )
     printf("ending app...\n");
     LOG(INFO) << "Ending app";
     /// stop timers
-    if( g_endNodeInfoTimer )
-    {
-        g_endNodeInfoTimer->stop();
-	int cnt=10;
-        while( g_endNodeInfoTimer->isRunning() && cnt--)
-        {
-            sleep(1);
-            g_endNodeInfoTimer->stop();
-        }
-    }
-    if( g_flowInfoTimer )
-    {
-        g_flowInfoTimer->stop();
-	int cnt=10;
-        while( g_flowInfoTimer->isRunning() && cnt--)
-        {
-            sleep(1);
-            g_flowInfoTimer->stop();
-        }
-    }
+    stopTimer(g_endNodeInfoTimer);
+    stopTimer(g_flowInfoTimer);
+    stopTimer(g_resetXbeeTimer);
     
     delete g_endNodeInfoTimer;
+    delete g_flowInfoTimer;
+    delete g_resetXbeeTimer;
+    
+    delete g_flowNotifier;
     delete g_gpsDriver;
+    
 #ifndef NO_XBEE_TEST
     delete g_xbee;
 #endif
@@ -514,6 +528,8 @@ int main(int argc, char * argv[])
     g_flowInfoTimer = new Timer(TIMER_SECONDS, flowInfoTimerCB, NULL);
     g_flowInfoTimer->startPeriodic(3);
 
+    g_resetXbeeTimer = new Timer(TIMER_SECONDS, resetXbeeTimerCB, NULL);
+    g_resetXbeeTimer->startPeriodic(120);
     
 
     /// Sleep

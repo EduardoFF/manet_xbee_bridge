@@ -108,6 +108,7 @@ class XbeeInterface
 
     MyConnection *createConnection(uint16_t addr);
     void setup();
+
     void receive(libxbee::Pkt **pkt);
     bool init();
     
@@ -144,6 +145,7 @@ public:
     void registerReceive(ReceiveCB);
 
     bool isOK();
+    void sendReset();
 
 };
 #endif

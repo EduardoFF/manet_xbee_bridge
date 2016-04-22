@@ -7,6 +7,8 @@
 
 FlowNotifier::FlowNotifier()
 {
+  m_running=false;
+  m_abort=false;
 }
 
 void
@@ -182,6 +184,7 @@ bool
 FlowNotifier::run()
 {
     int status = pthread_create(&m_thread, NULL, internalThreadEntryFunc, this);
+    m_running=true;
     return (status == 0);
 }
 
@@ -414,5 +417,13 @@ FlowNotifier::internalThreadEntry()
     }
 }
 
+FlowNotifier::~FlowNotifier()
+{
+  if( isRunning() )
+    {
+      stop();
+      pthread_join(m_thread,NULL);
+    }
+}
 
 

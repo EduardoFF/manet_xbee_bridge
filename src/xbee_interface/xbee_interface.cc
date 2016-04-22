@@ -196,6 +196,12 @@ XbeeInterface::createConnection(uint16_t addr)
   return con;
 }
 
+void
+XbeeInterface::sendReset()
+{
+    (*mATCon) << "FR";//    or like this 
+    sleep(1);  
+}
 int 
 XbeeInterface::send(uint16_t addr, TxInfo &txPar, const void *data, size_t size)
 {
