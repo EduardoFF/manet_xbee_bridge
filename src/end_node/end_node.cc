@@ -73,6 +73,14 @@ stopTimer(Timer *timer)
     }
 }
 
+void killTimer( Timer *timer)
+{
+  if( !timer )
+    return;
+  stopTimer(timer);
+  delete timer;
+}
+
 ///// here we send the node info packet /////
 void
 flowInfoTimerCB(void *arg)
@@ -234,13 +242,10 @@ signalHandler( int signum )
     printf("ending app...\n");
     LOG(INFO) << "Ending app";
     /// stop timers
-    stopTimer(g_endNodeInfoTimer);
-    stopTimer(g_flowInfoTimer);
-    stopTimer(g_resetXbeeTimer);
+    killTimer(g_endNodeInfoTimer);
+    killTimer(g_flowInfoTimer);
+    killTimer(g_resetXbeeTimer);
     
-    delete g_endNodeInfoTimer;
-    delete g_flowInfoTimer;
-    delete g_resetXbeeTimer;
     
     delete g_flowNotifier;
     delete g_gpsDriver;
@@ -470,6 +475,9 @@ int main(int argc, char * argv[])
     const string  myMac  = cl.follow("none", "--mac");
     const string  xbeeMode = cl.follow("xbee5", "--mode");
     const string  logDir  = cl.follow("/tmp/", "--logdir");
+    const int     infoPeriod  = cl.follow(1, "--info-period");
+    const int     flowPeriod  = cl.follow(3, "--flow-period");
+    const int     resetPeriod  = cl.follow(300, "--reset-period");
 
     /// Initialize Log
     google::InitGoogleLogging(argv[0]);
@@ -521,15 +529,30 @@ int main(int argc, char * argv[])
     /// create planningDriver connection
     g_planningDriver = new PLANNINGDriver("udpm://239.255.76.67:7667?ttl=1", "PLAN", false);
 
-    g_endNodeInfoTimer = new Timer(TIMER_SECONDS, endNodeInfoTimerCB, NULL);
-    //    g_endNodeInfoTimer->startPeriodic(1);
+    if( infoPeriod > 0)
+      {
+	g_endNodeInfoTimer = new Timer(TIMER_SECONDS, endNodeInfoTimerCB, NULL);
+	g_endNodeInfoTimer->startPeriodic(infoPeriod);
+      }
+    else
+      g_endNodeInfoTimer = NULL;
 
 
-    g_flowInfoTimer = new Timer(TIMER_SECONDS, flowInfoTimerCB, NULL);
-    g_flowInfoTimer->startPeriodic(3);
+    if( flowPeriod > 0 )
+      {
+	g_flowInfoTimer = new Timer(TIMER_SECONDS, flowInfoTimerCB, NULL);
+	g_flowInfoTimer->startPeriodic(flowPeriod);
+      }
+    else
+      g_flowInfoTimer = NULL;
 
-    g_resetXbeeTimer = new Timer(TIMER_SECONDS, resetXbeeTimerCB, NULL);
-    g_resetXbeeTimer->startPeriodic(120);
+    if( resetPeriod > 60)
+      {
+	g_resetXbeeTimer = new Timer(TIMER_SECONDS, resetXbeeTimerCB, NULL);
+	g_resetXbeeTimer->startPeriodic(resetPeriod);
+      }
+    else
+      g_resetXbeeTimer = NULL;
     
 
     /// Sleep
