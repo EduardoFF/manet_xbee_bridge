@@ -169,27 +169,32 @@ GPSDriver::notifyPos(int nodeid,
 void
 GPSDriver::internalThreadEntry()
 {
-    while (true)
+  while (true)
     {
-        if( m_uselcm )
+      if( m_uselcm )
         {
-            m_lcm.handle();
+	  m_lcm.handle();
         }
-        else{
-            if( m_gpsdOk ){
-                printf("doing gpsd ...\n");
-                gps gpsCoordinates;
-                gpsCoordinates = m_gpsdClient->getGPS();
-                if ((gpsCoordinates.x != 0) | (gpsCoordinates.y != 0) | (gpsCoordinates.z != 0 ))
-                {
-                    m_latestData.lat = gpsCoordinates.x;
-                    m_latestData.lon = gpsCoordinates.y;
-                    m_latestData.alt = gpsCoordinates.z;
-                    printf("Latest GPS data Updated\n");
-                }
-                printf("Latest GPS data: %f %f %f\n", m_latestData.lat, m_latestData.lon, m_latestData.alt);
-            }
-        }
+      else{
+	if( m_gpsdOk ){
+	  LOG(INFO) << "Trying to get data from GPSD Client";
+	  gps gpsCoordinates;
+	  gpsCoordinates = m_gpsdClient->getGPS();
+	  if ((gpsCoordinates.x != 0) | (gpsCoordinates.y != 0) | (gpsCoordinates.z != 0 ))
+	    {
+	      pthread_mutex_lock(&m_mutex);
+	      m_latestData.lat = gpsCoordinates.x;
+	      m_latestData.lon = gpsCoordinates.y;
+	      m_latestData.alt = gpsCoordinates.z;
+	      LOG(INFO) << "GPS Data updated from GPSD:"
+			<< " [ " << gpsCoordinates.x
+			<< " , " << gpsCoordinates.y
+			<< " , " << gpsCoordinates.z
+			<< " ]";
+	      pthread_mutex_unlock(&m_mutex);
+	    }
+	}
+      }
     }
 }
 
