@@ -452,14 +452,15 @@ receiveData(uint16_t addr, void *data, char rssi, timespec timestamp, size_t len
         if (header.type == XBEEDATA_ENDNODEINFO )               /// Check the type of Header
         {
             /// Check the size of the packet
-	  LOG(INFO) << "Got EndNodeInfo";
+	  LOG(INFO) << "Header: EndNodeInfo";
             if(len == sizeof(Header) + sizeof(EndNodeInfo))     /// Packet is of proper size
             {
                 EndNodeInfo eInfo;
                 memcpy(&eInfo,
                        (unsigned char *)data + sizeof(Header),
                        sizeof(EndNodeInfo));
-                LOG(INFO) << "EndNodeInfo: " << eInfo;
+                LOG(INFO) << "EndNodeInfo from " << header.src
+			  << ": " << eInfo;
                 LOG(INFO) << "GPS Data Received: lat: "
 			  << eInfo.latitude
 			  << " lon: "

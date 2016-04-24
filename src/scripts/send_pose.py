@@ -31,6 +31,7 @@ parser.add_option("-t", "--timestamp",
                   default=0,
                   help="pose timestamp")
 
+
 (options, args) = parser.parse_args()
 if len(args) != 4:
     print "mandatory arguments missing (",len(args),")"

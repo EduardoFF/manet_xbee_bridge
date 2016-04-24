@@ -37,7 +37,7 @@
 #include <unistd.h>
 #include <lcm/lcm-cpp.hpp>
 #include <pthread.h>
-#include "pose_t.hpp"
+#include "pos_gps_t.hpp"
 #include "gps_client/gps_client.h"
 
 using namespace std;
@@ -74,7 +74,7 @@ public:
 
     void handleMessage(const lcm::ReceiveBuffer* rbuf,
                        const std::string& chan,
-                       const pose_t* msg);
+                       const pos_gps_t* msg);
 
 
     TimestampedGPSData data();

@@ -1,12 +1,21 @@
 #include "gps_driver.h"
 #include <sys/time.h>
 #include <lcm/lcm-cpp.hpp>
-#include "pose_t.hpp"
 #include <glog/logging.h>
 #define IT(c) __typeof((c).begin())
 #define FOREACH(i,c) for(__typeof((c).begin()) i=(c).begin();i!=(c).end();++i)
 
 
+
+std::ostream
+&operator<<(std::ostream &os, const pos_gps_t &gps)
+{
+  os << "lat: " << gps.latitude
+     << " lon: " << gps.longitude
+     << " alt: " << gps.altitude;
+  return os;
+}
+  
 
 GPSDriver::GPSDriver(const char * url,
 		     const string &channel,
@@ -71,16 +80,17 @@ GPSDriver::run()
 void
 GPSDriver::handleMessage(const lcm::ReceiveBuffer* rbuf,
                          const std::string& chan,
-                         const pose_t* msg)
+                         const pos_gps_t* msg)
 {
     uint64_t tt = getTime();
     //  uint8_t  rid = msg->robotid;
-    LOG(INFO) << "handlePoseMsg " << tt
-	      << " @ chan " << chan;
+    LOG(INFO) << "handleMsg " << tt
+	      << " @ chan " << chan
+	      << " pos_gps: " << *msg;
     pthread_mutex_lock(&m_mutex);
-    m_latestData.lat = msg->position[0];
-    m_latestData.lon = msg->position[1];
-    m_latestData.alt = msg->position[2];
+    m_latestData.lat = msg->latitude;
+    m_latestData.lon = msg->longitude;
+    m_latestData.alt = msg->altitude;
     pthread_mutex_unlock(&m_mutex);
 }
 
@@ -157,11 +167,11 @@ GPSDriver::notifyPos(int nodeid,
 		     double alt,
 		     int epsg)
 {
-  pose_t mymsg;
+  pos_gps_t mymsg;
   mymsg.robotid = nodeid;
-  mymsg.position[0] = lon;
-  mymsg.position[1] = lat;
-  mymsg.position[2] = alt;
+  mymsg.longitude = lon;
+  mymsg.latitude = lat;
+  mymsg.altitude = alt;
   /// here we transform to UTM
   /// and then publish
   m_lcm.publish(m_lcmChannel.c_str(), &mymsg);

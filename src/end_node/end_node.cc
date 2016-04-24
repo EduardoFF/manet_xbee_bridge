@@ -185,6 +185,7 @@ endNodeInfoTimerCB(void *arg)
     Header hdr;
 
     /// make header
+    hdr.src = 
     hdr.type = XBEEDATA_ENDNODEINFO;
     memcpy(g_outBuf, &hdr, sizeof(Header));
 

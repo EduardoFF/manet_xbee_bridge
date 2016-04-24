@@ -14,6 +14,7 @@ ostream &operator<<(ostream &os, const EndNodeInfo &info)
 
 ostream &operator<<(ostream &os, const Header &hdr)
 {
+  os << " src " << (int) +hdr.src;
   os << "type: ";
   if( hdr.type == XBEEDATA_ROUTING )
     os << "ROUTING";
@@ -23,6 +24,5 @@ ostream &operator<<(ostream &os, const Header &hdr)
     os << "FLOWINFO";
   else if( hdr.type == XBEEDATA_PLANNING )
     os << "PLANNING"; 
-  os << " src " << (int) hdr.src;
   return os;
 }
