@@ -461,7 +461,8 @@ receiveData(uint16_t addr, void *data, char rssi, timespec timestamp, size_t len
                        sizeof(EndNodeInfo));
                 LOG(INFO) << "EndNodeInfo from " << header.src
 			  << ": " << eInfo;
-                LOG(INFO) << "GPS Data Received: lat: "
+                LOG(INFO) << "GPS Data Received from " << +header.src
+			  << " lat: "
 			  << eInfo.latitude
 			  << " lon: "
 			  << eInfo.longitude
@@ -596,7 +597,7 @@ int main(int argc, char * argv[])
     g_sendPlanningDataTimer = new Timer(TIMER_SECONDS, sendPlanningDataTimerCB, NULL);
     g_sendPlanningDataTimer->startPeriodic(1);
     g_flowNotifier = new FlowNotifier("udpm://239.255.76.67:7667?ttl=0", "iflowip", false);
-    g_gpsDriver = new GPSDriver("udpm://239.255.76.67:7667?ttl=0", "POSE", false, false);
+    g_gpsDriver = new GPSDriver("udpm://239.255.76.67:7667?ttl=0", "POSEGPS", false, false);
     LOG(INFO) << "drivers up";
     
     if( addrBook != "none" )
