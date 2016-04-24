@@ -20,7 +20,7 @@ using namespace std;
 XbeeInterface *g_xbee;
 #endif
 
-int g_nodeId;
+uint8_t g_nodeId;
 
 PLANNINGDriver *g_planningDriver;
 ROUTINGDriver *g_routingDriver;
@@ -485,6 +485,8 @@ int main(int argc, char * argv[])
     FLAGS_logbufsecs = 0;
     FLAGS_log_dir = logDir;
     LOG(INFO) << "Logging initialized";
+
+    LOG(INFO) << "using: nodeId " << g_nodeId;
     
 
     XbeeInterfaceParam xbeePar;
