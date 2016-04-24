@@ -486,7 +486,7 @@ int main(int argc, char * argv[])
     FLAGS_log_dir = logDir;
     LOG(INFO) << "Logging initialized";
 
-    LOG(INFO) << "using: nodeId " << g_nodeId;
+    LOG(INFO) << "using: nodeId " << +g_nodeId;
     
 
     XbeeInterfaceParam xbeePar;
