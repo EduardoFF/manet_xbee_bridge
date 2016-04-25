@@ -43,7 +43,7 @@ alt = float(args[3])
 """  --- no orientaion --- """
 
 channel = options.channel
-lc = lcm.LCM("udpm://239.255.76.67:7667?ttl=0") 
+lc = lcm.LCM("udpm://239.255.76.67:7667?ttl=1") 
 
 msg = pos_gps_t()
 msg.robotid = robotid
