@@ -11,7 +11,10 @@ def my_handler(channel, data):
     print "latitude: ", msg.latitude
     print "altitude: ", msg.altitude
 
-lc = lcm.LCM()
+lc = lcm.LCM("udpm://239.255.76.67:7667?ttl=1") 
+
+
+#lc = lcm.LCM()
 subscription = lc.subscribe(sys.argv[1], my_handler)
 
 try:
