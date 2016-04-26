@@ -109,7 +109,8 @@ sendRoutingDataTimerCB(void *arg)
         IT(routingData.route) it = routingData.route.begin();
 
         g_routingXbeeMsgs.clear();
-        for(;;)
+	bool abortSending=false;
+        while(!abortSending)
         {
             std::vector<uint8_t> dataVec;
             dataVec.reserve(XBEE_MAX_PAYLOAD_LENGTH);
@@ -129,6 +130,7 @@ sendRoutingDataTimerCB(void *arg)
 
             /// let's forget for a moment about the fragment numbers
             int nbytes=0;
+
 
             while(it != routingData.route.end() )
             {
@@ -165,7 +167,9 @@ sendRoutingDataTimerCB(void *arg)
                 else
                 {
                     ///
-                    break;
+		  LOG(INFO) << "table too big - sorry";
+		  abortSending=true;
+		  break;
                 }
                 it++;
             }
@@ -459,7 +463,7 @@ receiveData(uint16_t addr, void *data, char rssi, timespec timestamp, size_t len
                 memcpy(&eInfo,
                        (unsigned char *)data + sizeof(Header),
                        sizeof(EndNodeInfo));
-                LOG(INFO) << "EndNodeInfo from " << header.src
+                LOG(INFO) << "EndNodeInfo from " << +header.src
 			  << ": " << eInfo;
                 LOG(INFO) << "GPS Data Received from " << +header.src
 			  << " lat: "
@@ -483,7 +487,7 @@ receiveData(uint16_t addr, void *data, char rssi, timespec timestamp, size_t len
 
 	if (header.type == XBEEDATA_FLOWINFO )  /// Check the type of Header
         {
-	  LOG(INFO) << "Got FlowInfo";
+	  LOG(INFO) << "Got FlowInfo from " << +header.src;
 	  if( len >= sizeof(Header) + sizeof(FlowInfoHdr) )
 	    {
 	      FlowInfoHdr fInfoHdr;

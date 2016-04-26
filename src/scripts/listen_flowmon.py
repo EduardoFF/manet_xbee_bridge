@@ -14,7 +14,7 @@ def my_handler(channel, data):
         print "pkt_cnt %d "%(msg.flows[i].pkt_count),
         print "byte_cnt %d "%(msg.flows[i].byte_count),
         print "rate %f "%(msg.flows[i].data_rate),
-        print "last_act %d "%(msg.flows[i].last_activity),
+        print "last_act %d "%(msg.flows[i].last_activity)
     print("")
 
 lc = lcm.LCM()
