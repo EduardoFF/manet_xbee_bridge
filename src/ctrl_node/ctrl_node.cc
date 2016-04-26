@@ -109,6 +109,7 @@ sendRoutingDataTimerCB(void *arg)
         IT(routingData.route) it = routingData.route.begin();
 
         g_routingXbeeMsgs.clear();
+	LOG(INFO) << "Sending " << routingData;
 	bool abortSending=false;
         while(!abortSending)
         {
