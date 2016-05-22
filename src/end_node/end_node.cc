@@ -522,7 +522,7 @@ int main(int argc, char * argv[])
       g_gpsDriver = new GPSDriver("udpm://239.255.76.67:7667?ttl=1", "POSEGPS", true, false);
     }
 
-    g_flowNotifier = new FlowNotifier("udpm://239.255.76.67:7667?ttl=1", "iflow", true);
+    g_flowNotifier = new FlowNotifier("udpm://239.255.76.67:7667?ttl=1", "mineiflow", true);
     if( addrBook != "none" )
       g_flowNotifier->readAddressBook(addrBook);
 

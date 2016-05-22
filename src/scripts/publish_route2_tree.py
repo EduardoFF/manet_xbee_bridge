@@ -39,7 +39,7 @@ def readFile(fname):
             sys.exit(1)
         node = s[0]
         succ = [s[n:n+2] for n in range(1,len(s),2)]
-        succl = [(i,int(j)) for [i,j] in succ]
+        succl = [(i,j,1) for [i,j] in succ]
         rtree.append((node,succl))
 
 
