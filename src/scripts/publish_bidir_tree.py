@@ -57,7 +57,7 @@ if options.filename:
 lcm = lcm.LCM("udpm://239.255.76.67:7667?ttl=1")
 
 
-print paths
+#print paths
 
 
 
@@ -66,7 +66,7 @@ print paths
 tables={}
 
 
-print "---------- TABLES ------------"
+#print "---------- TABLES ------------"
 # one dir
 
 for p in paths:
@@ -81,9 +81,9 @@ for p in paths:
             tab[dest]=nh
         tables[n] = tab
 
-print tables
+#print tables
 
-print "-------- REVERSE -----------"
+#print "-------- REVERSE -----------"
 
 for p in paths:
     p.reverse()
@@ -97,7 +97,7 @@ for p in paths:
             nh = p[j+1]
             tab[dest]=nh
         tables[n] = tab
-print tables
+#print tables
 
 
 msg = route2_tree_t()
@@ -105,10 +105,12 @@ msg.timestamp = int(time.time() * 1000000)
 
 msg.n = len(tables)
             
+only_print=True
 
 rtables=list()
 for (node, rtable) in tables.items():
     rt = route2_table_t()
+    print node,
     rt.node = node
     rt.n = len(rtable)
     entries=list()
@@ -117,13 +119,16 @@ for (node, rtable) in tables.items():
         re.dest = dest
         re.node = nh
         re.weight = 1
+        print dest,nh,
         entries.append(re)
+    print ""
     rt.entries = entries
     rtables.append(rt)
 
 msg.rtable = rtables
-print rtables
+#print rtables
 #print msg
-print "publishing msg to ",options.channel
-lcm.publish(options.channel, msg.encode())
+if not only_print:
+    print "publishing msg to ",options.channel
+    lcm.publish(options.channel, msg.encode())
 

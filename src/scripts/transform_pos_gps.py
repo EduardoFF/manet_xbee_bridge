@@ -6,10 +6,10 @@ import pyproj
 
 
 
-pose_channel = "POSE"
+pose_channel = "POSEUTM"
 
-offset_x = -487240
-offset_y = -113400
+offset_x = 0
+offset_y = 0
 def my_handler(channel, data):
     msg = pos_gps_t.decode(data)
     print("Received message on channel \"%s\"" % channel)
