@@ -123,6 +123,12 @@ flowInfoTimerCB(void *arg)
       fInfo.nodeId =g_flowNotifier->getIdFromAddressBook(it->src_addr);
       if( fInfo.nodeId <= 0)
 	continue;
+      if( g_flowNotifier->getIdFromAddressBook(it->dst_addr) != g_nodeId )
+	{
+	  LOG(INFO) << "Rejected flow from " << fInfo.nodeId
+		    << " to " << it->dst_addr.toString();
+	continue;
+	}
       fInfo.dataRate = it->data_rate;
       memcpy(ptr, &fInfo, sizeof(FlowInfoEntry));
       ptr += sizeof(FlowInfoEntry);
@@ -138,7 +144,7 @@ flowInfoTimerCB(void *arg)
   else
     {
       LOG(INFO) << "Notifying "
-		<< fInfoHdr->nEntries << " flows";
+		<< (int) fInfoHdr->nEntries << " flows";
     }
 
     XbeeInterface::TxInfo txInfo;
