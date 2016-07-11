@@ -18,6 +18,7 @@ using namespace std;
 
 #ifndef NO_XBEE_TEST
 XbeeInterface *g_xbee;
+#else
 #endif
 
 uint8_t g_nodeId;
@@ -125,7 +126,7 @@ flowInfoTimerCB(void *arg)
 	continue;
       if( g_flowNotifier->getIdFromAddressBook(it->dst_addr) != g_nodeId )
 	{
-	  LOG(INFO) << "Rejected flow from " << fInfo.nodeId
+	  LOG(INFO) << "Rejected flow from " << (int) fInfo.nodeId
 		    << " to " << it->dst_addr.toString();
 	continue;
 	}
@@ -239,7 +240,9 @@ resetXbeeTimerCB(void *arg)
     if( g_abort )
         return;
     LOG(INFO) << "Resetting Xbee ...";
+#ifndef NO_XBEE_TEST
     g_xbee->sendReset();
+#endif
     LOG(INFO) << "Reset done.";
 }
 void

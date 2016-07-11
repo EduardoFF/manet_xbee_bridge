@@ -105,7 +105,7 @@ msg.timestamp = int(time.time() * 1000000)
 
 msg.n = len(tables)
             
-only_print=True
+only_print=False
 
 rtables=list()
 for (node, rtable) in tables.items():
