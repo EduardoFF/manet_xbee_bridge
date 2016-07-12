@@ -646,6 +646,7 @@ int main(int argc, char * argv[])
     if( debugPeriod > 0)
       {
 	g_debugTimer = new Timer(TIMER_SECONDS, endNodeDebugTimerCB, NULL);
+	LOG(INFO) << "starting debug timer";
 	g_debugTimer->startPeriodic(debugPeriod);
       }
     else

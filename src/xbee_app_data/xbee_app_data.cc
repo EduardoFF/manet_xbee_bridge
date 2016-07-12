@@ -32,6 +32,9 @@ ostream &operator<<(ostream &os, const Header &hdr)
     os << "ROUTING";
   else if( hdr.type == XBEEDATA_ENDNODEINFO)
     os << "ENDNODEINFO";
+  else if( hdr.type == XBEEDATA_ENDNODEDEBUG)
+    os << "ENDNODEDEBUG";
+  
   else if( hdr.type == XBEEDATA_FLOWINFO )
     os << "FLOWINFO";
   else if( hdr.type == XBEEDATA_PLANNING )
