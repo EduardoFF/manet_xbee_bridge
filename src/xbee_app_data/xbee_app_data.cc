@@ -18,7 +18,7 @@ ostream &operator<<(ostream &os, const EndNodeDebug &info)
      << " bytes_sent " << info.n_xbee_bytes_sent
      << " pkts_rcv " << info.n_xbee_pkts_rcv
      << " bytes_rcv " << info.n_xbee_bytes_rcv
-     << " timestamp " << info.timestamp
+     << " timestamp " << (long long )info.timestamp
      << " last_flow_notify_time " << (int) info.last_flow_notify_time
      << " manet_alive " << (info.manet_alive>0?"true":"false");
   return os;
