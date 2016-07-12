@@ -9,6 +9,7 @@ FlowNotifier::FlowNotifier()
 {
   m_running=false;
   m_abort=false;
+  m_lastUpdate = 0;
 }
 
 void
@@ -120,6 +121,13 @@ FlowNotifier::getFlows(int dt)
   return flist;
 }
 
+uint64_t
+FlowNotifier::lastNotificationTime()
+{
+  return m_lastUpdate;
+}
+
+
 				   
 std::ostream &
 operator<<(std::ostream &os, const FlowMap &rdata)
@@ -196,6 +204,7 @@ FlowNotifier::handleMessage(const lcm::ReceiveBuffer* rbuf,
                              const flow_list_t* msg)
 {
     uint64_t tt = getTime();
+    m_lastUpdate = tt;
 
     printf("FlowNotifier: [%lld] got config \n", (long long)tt);
     printf("  Received message on channel \"%s\":\n", chan.c_str());

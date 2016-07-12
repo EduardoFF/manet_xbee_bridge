@@ -30,6 +30,7 @@ GPSDriver *g_gpsDriver;
 Timer *g_endNodeInfoTimer;
 Timer *g_flowInfoTimer;
 Timer *g_resetXbeeTimer;
+Timer *g_debugTimer;
 char g_outBuf[130];
 bool g_abort;
 
@@ -38,6 +39,30 @@ std::set<uint8_t> g_lastRoutingFragments;
 
 uint16_t g_lastPlanningTableRcv = 0;
 std::set<uint8_t> g_lastPlanningFragments;
+
+uint16_t g_nPacketsSent;
+uint16_t g_nPacketsRcv;
+uint32_t g_nBytesSent;
+uint32_t g_nBytesRcv;
+
+bool g_manetAlive;
+
+
+/// returns time in milliseconds
+uint64_t
+getTime()
+{
+    struct timeval timestamp;
+    gettimeofday(&timestamp, NULL);
+
+    uint64_t ms1 = (uint64_t) timestamp.tv_sec;
+    ms1*=1000;
+
+    uint64_t ms2 = (uint64_t) timestamp.tv_usec;
+    ms2/=1000;
+
+    return (ms1+ms2);
+}
 
 /// Function to print Help if need be
 void print_help(const string Application)
@@ -82,6 +107,45 @@ void killTimer( Timer *timer)
   delete timer;
 }
 
+
+bool
+xbeeSend(size_t buflen)
+{
+  pthread_mutex_lock(&g_sendMutex);
+  XbeeInterface::TxInfo txInfo;
+  txInfo.reqAck  = false;
+  txInfo.readCCA = false;
+  
+  int retval = g_xbee->send(0xffff, txInfo, g_outBuf, buflen);
+  if( retval == XbeeInterface::NO_ACK )
+    {
+      LOG(INFO) << "send failed NOACK";
+      return false;
+    }
+  else if( retval == XbeeInterface::TX_MAC_BUSY )
+    {
+      LOG(INFO) << "send failed MACBUSY";
+      return false;
+    }
+  else
+    {
+      LOG(INFO) << "send OK";
+      g_nPacketsSent++;
+      g_nBytesSent+=buflen;
+      return true;
+    }
+
+  pthread_mutex_unlock(&g_sendMutex);
+}
+
+
+bool isManetAlive()
+{
+  /// Now, we check if manet is alive if we have received
+  /// a flow notification in the last 10 seconds
+  uint64_t last_flow_notify = g_flowNotifier->lastNotificationTime();
+  return (getTime() - last_flow_notify) < 10000;
+}
 ///// here we send the node info packet /////
 void
 flowInfoTimerCB(void *arg)
@@ -147,30 +211,8 @@ flowInfoTimerCB(void *arg)
       LOG(INFO) << "Notifying "
 		<< (int) fInfoHdr->nEntries << " flows";
     }
+  xbeeSend(buflen);
 
-    XbeeInterface::TxInfo txInfo;
-    txInfo.reqAck  = false;
-    txInfo.readCCA = false;
-
-#ifndef NO_XBEE_TEST
-pthread_mutex_lock(&g_sendMutex);
- 
-    int retval = g_xbee->send(0xffff, txInfo, g_outBuf, buflen);
-    if( retval == XbeeInterface::NO_ACK )
-    {
-      LOG(INFO) << "send failed NOACK";
-    }
-    else if( retval == XbeeInterface::TX_MAC_BUSY )
-    {
-      LOG(INFO) << "send failed MACBUSY";
-    }
-    else
-    {
-      LOG(INFO) << "send OK";
-    }
-
-    pthread_mutex_unlock(&g_sendMutex);
-#endif
   
   //TimestampedGPSData gpsData = g_gpsDriver->data();
   //  eInfo.dataRate  = g_dataRateMon->data();
@@ -184,8 +226,6 @@ endNodeInfoTimerCB(void *arg)
         return;
     LOG(INFO) << "endNodeInfoTimer triggered";
 
-    /// lock the mutex first
-    pthread_mutex_lock(&g_sendMutex);
     using namespace xbee_app_data;
 
     //// compose node info packet
@@ -215,24 +255,53 @@ endNodeInfoTimerCB(void *arg)
     txInfo.reqAck  = false;
     txInfo.readCCA = false;
 
-#ifndef NO_XBEE_TEST
-    int retval = g_xbee->send(0xffff, txInfo, g_outBuf, buflen);
-    if( retval == XbeeInterface::NO_ACK )
-    {
-      LOG(INFO) << "send failed NOACK";
-    }
-    else if( retval == XbeeInterface::TX_MAC_BUSY )
-    {
-      LOG(INFO) << "send failed MACBUSY";
-    }
-    else
-    {
-      LOG(INFO) << "send OK";
-    }
-#endif
-    pthread_mutex_unlock(&g_sendMutex);
+    xbeeSend(buflen);
+
 }
 
+
+///// here we send the node info packet /////
+void
+endNodeDebugTimerCB(void *arg)
+{
+    if( g_abort )
+        return;
+    LOG(INFO) << "endNodeDebugTimer triggered";
+
+    using namespace xbee_app_data;
+
+    //// compose node info packet
+    Header hdr;
+
+    /// make header
+    hdr.src = g_nodeId;
+    hdr.type = XBEEDATA_ENDNODEDEBUG;
+    memcpy(g_outBuf, &hdr, sizeof(Header));
+
+    /// make payload
+    EndNodeDebug eInfo;
+    eInfo.n_xbee_pkts_sent = g_nPacketsSent;
+    eInfo.n_xbee_bytes_sent = g_nBytesSent;
+    eInfo.n_xbee_pkts_rcv = g_nPacketsRcv;
+    eInfo.n_xbee_bytes_rcv = g_nBytesRcv;
+    eInfo.timestamp = getTime();
+    eInfo.last_flow_notify_time =
+      (eInfo.timestamp - g_flowNotifier->lastNotificationTime())/1000;
+    eInfo.manet_alive = isManetAlive();
+    
+   
+
+    //  eInfo.dataRate  = g_dataRateMon->data();
+
+    memcpy(g_outBuf+sizeof(Header), &eInfo, sizeof(EndNodeDebug));
+    size_t buflen = sizeof(Header) + sizeof(EndNodeDebug);
+    XbeeInterface::TxInfo txInfo;
+    txInfo.reqAck  = false;
+    txInfo.readCCA = false;
+
+    xbeeSend(buflen);
+
+}
 
 void
 resetXbeeTimerCB(void *arg)
@@ -277,6 +346,8 @@ receiveData(uint16_t addr, void *data,
     LOG(INFO) << "Got data from " << addr
          << " rssi: " << +rssi << ") "
 	      <<  " len: " << len;
+    g_nPacketsRcv++;
+    g_nBytesRcv+=len;
     if (len > sizeof(Header))
     {
         Header header;
@@ -465,6 +536,11 @@ int main(int argc, char * argv[])
 {
 
     g_abort = false;
+    g_manetAlive = false;
+    g_nPacketsSent = 0;
+    g_nPacketsRcv = 0;
+    g_nBytesSent = 0;
+    g_nBytesRcv = 0;
 
 
     /// register signal
@@ -488,6 +564,7 @@ int main(int argc, char * argv[])
     const int     infoPeriod  = cl.follow(1, "--info-period");
     const int     flowPeriod  = cl.follow(3, "--flow-period");
     const int     resetPeriod  = cl.follow(300, "--reset-period");
+    const int     debugPeriod  = cl.follow(10, "--debug-period");
 
     /// Initialize Log
     google::InitGoogleLogging(argv[0]);
@@ -565,7 +642,15 @@ int main(int argc, char * argv[])
       }
     else
       g_resetXbeeTimer = NULL;
-    
+
+    if( debugPeriod > 0)
+      {
+	g_debugTimer = new Timer(TIMER_SECONDS, endNodeDebugTimerCB, NULL);
+	g_debugTimer->startPeriodic(debugPeriod);
+      }
+    else
+      g_debugTimer = NULL;
+
 
     /// Sleep
     for(;;)

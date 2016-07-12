@@ -147,6 +147,7 @@ public:
     node_addr getIpFromAddressBook(int node_id);
     bool isRunning(){ return m_running;}
     bool stop(){ m_abort=true;}
+    uint64_t lastNotificationTime();
     ~FlowNotifier();
       
     
@@ -172,6 +173,7 @@ private:
 
     bool m_running;
     bool m_abort;
+    uint64_t m_lastUpdate;
 
     inline bool isLCMReady();
     inline void subscribeToChannel(const string & channel) ;

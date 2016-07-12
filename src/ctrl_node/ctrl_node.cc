@@ -486,6 +486,25 @@ receiveData(uint16_t addr, void *data, char rssi, timespec timestamp, size_t len
             }
         }
 
+	if (header.type == XBEEDATA_ENDNODEDEBUG )        /// Check the type of Header
+        {
+            /// Check the size of the packet
+	  LOG(INFO) << "Header: EndNodeDebug";
+            if(len == sizeof(Header) + sizeof(EndNodeDebug))     /// Packet is of proper size
+            {
+                EndNodeDebug eDebug;
+                memcpy(&eDebug,
+                       (unsigned char *)data + sizeof(Header),
+                       sizeof(EndNodeDebug));
+                LOG(INFO) << "EndNodeDebug from " << +header.src
+			  << ": " << eDebug;			       
+            }
+            else
+            {
+	      LOG(INFO) << "Invalid length for EndNodeInfo msg";
+            }
+        }
+		
 	if (header.type == XBEEDATA_FLOWINFO )  /// Check the type of Header
         {
 	  LOG(INFO) << "Got FlowInfo from " << +header.src;

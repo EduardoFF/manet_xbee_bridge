@@ -37,6 +37,7 @@ namespace xbee_app_data
     static const char     XBEEDATA_ROUTING          = 2;
     static const char     XBEEDATA_PLANNING         = 3;
     static const char     XBEEDATA_FLOWINFO         = 4;
+    static const char     XBEEDATA_ENDNODEDEBUG     = 5;
     static const char     XBEE_MAX_PAYLOAD_LENGTH   = 127;
     static const uint16_t XBEE_BROADCAST_ADDR       = 65535;
 
@@ -47,6 +48,18 @@ namespace xbee_app_data
         float altitude;
         int dataRate;
         int lastTabId;
+    };
+
+    struct __attribute__((__packed__)) EndNodeDebug
+    {
+      uint16_t n_xbee_pkts_sent;
+      uint32_t n_xbee_bytes_sent;
+      uint16_t n_xbee_pkts_rcv;
+      uint32_t n_xbee_bytes_rcv;
+      uint64_t timestamp;
+      uint16_t last_flow_notify_time; /// seconds until last
+      
+      char     manet_alive;
     };
 
     struct __attribute__((__packed__)) FlowInfoHdr
@@ -113,7 +126,7 @@ namespace xbee_app_data
     };
 
 };
-
+std::ostream &operator<<(std::ostream &os, const xbee_app_data::EndNodeDebug &);
 std::ostream &operator<<(std::ostream &os, const xbee_app_data::EndNodeInfo &);
 std::ostream &operator<<(std::ostream &os, const xbee_app_data::Routing &);
 std::ostream &operator<<(std::ostream &os, const xbee_app_data::Planning &);
