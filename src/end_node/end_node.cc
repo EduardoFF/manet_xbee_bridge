@@ -117,6 +117,7 @@ xbeeSend(size_t buflen)
   txInfo.readCCA = false;
   
   int retval = g_xbee->send(0xffff, txInfo, g_outBuf, buflen);
+  pthread_mutex_unlock(&g_sendMutex);
   if( retval == XbeeInterface::NO_ACK )
     {
       LOG(INFO) << "send failed NOACK";
@@ -135,7 +136,7 @@ xbeeSend(size_t buflen)
       return true;
     }
 
-  pthread_mutex_unlock(&g_sendMutex);
+
 }
 
 
@@ -285,6 +286,7 @@ endNodeDebugTimerCB(void *arg)
     eInfo.n_xbee_pkts_rcv = g_nPacketsRcv;
     eInfo.n_xbee_bytes_rcv = g_nBytesRcv;
     eInfo.timestamp = getTime();
+    LOG(INFO) << "sending timestamp " << (long long) eInfo.timestamp;
     eInfo.last_flow_notify_time =
       (eInfo.timestamp - g_flowNotifier->lastNotificationTime())/1000;
     eInfo.manet_alive = isManetAlive();
@@ -646,7 +648,7 @@ int main(int argc, char * argv[])
     if( debugPeriod > 0)
       {
 	g_debugTimer = new Timer(TIMER_SECONDS, endNodeDebugTimerCB, NULL);
-	LOG(INFO) << "starting debug timer";
+	LOG(INFO) << "starting debug timer with period " << debugPeriod;
 	g_debugTimer->startPeriodic(debugPeriod);
       }
     else
