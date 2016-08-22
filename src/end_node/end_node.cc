@@ -47,6 +47,7 @@ uint32_t g_nBytesRcv;
 
 bool g_manetAlive;
 
+int g_errorCnt;
 
 /// returns time in milliseconds
 uint64_t
@@ -128,8 +129,14 @@ xbeeSend(size_t buflen)
       LOG(INFO) << "send failed MACBUSY";
       return false;
     }
+  else if( retval == XbeeInterface::TX_DEVICE_ERROR )
+    {
+      LOG(INFO) << "send ERROR";
+      g_errorCnt++;
+    }
   else
     {
+      g_errorCnt=0;
       LOG(INFO) << "send OK";
       g_nPacketsSent++;
       g_nBytesSent+=buflen;
@@ -364,15 +371,16 @@ receiveData(uint16_t addr, void *data,
                        (unsigned char *)data + sizeof(Header),
                        sizeof(Routing));
                 LOG(INFO) << "TabId: " << +(route.tabId);
-                if( route.tabId > g_lastRoutingTableRcv )
-                {
+		//                if( route.tabId > g_lastRoutingTableRcv )
+		//		  if( route.tabId > g_lastRoutingTableRcv )
+                //{
 		  LOG(INFO) << "NEW TREE " <<  route.tabId;
                     /// we clear the routing table,
                     /// annotate the timestamp
                     g_routingDriver->clearData(0);
                     g_lastRoutingFragments.clear();
                     g_lastRoutingTableRcv=route.tabId;
-                }
+		    //}
 
                 /// check if we already got this fragment
                 if( g_lastRoutingFragments.find(route.fragNb) !=
@@ -544,6 +552,9 @@ int main(int argc, char * argv[])
     g_nBytesSent = 0;
     g_nBytesRcv = 0;
 
+    /// counting consecutive send errors
+    g_errorCnt = 0;
+
 
     /// register signal
     signal(SIGINT, signalHandler);
@@ -594,31 +605,43 @@ int main(int argc, char * argv[])
 #ifndef NO_XBEE_TEST
     /// create xbee connection
     g_xbee = new XbeeInterface(xbeePar);
+    if( !g_xbee->isOK() )
+      {
+	fprintf(stderr, "xbee init failed\n");
+        exit(-1);
+      }
+    
     g_xbee->registerReceive(&receiveData);
 #endif
 
     if( use_gpsd )
     {
       LOG(INFO)  << "USING GPSD";
-      g_gpsDriver = new GPSDriver("udpm://239.255.76.67:7667?ttl=1", "POSEGPS", true, true);
+      g_gpsDriver = new GPSDriver(g_nodeId,"udpm://239.255.76.67:7667?ttl=0",
+				  "POSEGPS", true, true);
         /// create gpsDriver connection
 	//        g_gpsDriver = new GPSDriver(true);
     }
     else
     {
         /// create gpsDriver connection
-      g_gpsDriver = new GPSDriver("udpm://239.255.76.67:7667?ttl=1", "POSEGPS", true, false);
+      /// make it local only
+      g_gpsDriver = new GPSDriver(g_nodeId, "udpm://239.255.76.67:7667?ttl=0",
+				  "POSEGPS", true, false);
     }
 
-    g_flowNotifier = new FlowNotifier("udpm://239.255.76.67:7667?ttl=1", "mineiflow", true);
+    /// make it local only
+    g_flowNotifier = new FlowNotifier("udpm://239.255.76.67:7667?ttl=0", "mineiflow", true);
     if( addrBook != "none" )
       g_flowNotifier->readAddressBook(addrBook);
 
     /// create routing Driver -- we don't need to listen LCM
-    g_routingDriver = new ROUTINGDriver("udpm://239.255.76.67:7667?ttl=1", "RNP2", false);
+    /// make it local only
+    g_routingDriver = new ROUTINGDriver("udpm://239.255.76.67:7667?ttl=0", "RNP2", false);
 
     /// create planningDriver connection
-    g_planningDriver = new PLANNINGDriver("udpm://239.255.76.67:7667?ttl=1", "PLAN", false);
+    /// make it local only
+    g_planningDriver = new PLANNINGDriver("udpm://239.255.76.67:7667?ttl=0", "PLAN", false);
 
     if( infoPeriod > 0)
       {

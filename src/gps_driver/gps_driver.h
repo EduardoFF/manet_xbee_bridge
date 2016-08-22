@@ -65,7 +65,8 @@ class GPSDriver
 public:
   /// constructor for using gpsd client
     GPSDriver(bool autorun);
-    GPSDriver(const char * url,
+    GPSDriver(int id,
+	      const char * url,
 	      const string &channel,
 	      bool handle,
 	      bool with_gpsd);
@@ -87,6 +88,7 @@ private:
     static std::string getTimeStr();
     TimestampedGPSData m_latestData;
 
+    int m_id;
     bool m_uselcm;
     const char * m_lcmURL;
     string m_lcmChannel;

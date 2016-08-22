@@ -41,3 +41,20 @@ ostream &operator<<(ostream &os, const Header &hdr)
     os << "PLANNING"; 
   return os;
 }
+
+unsigned long
+checksum(unsigned char *str, size_t len)
+{
+  unsigned long hash = 5381;
+  int c;
+
+  size_t i=0;
+  while (i<len)
+    {
+      c = *str++;
+      hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+      i++;
+    }
+
+  return hash;
+}

@@ -26,6 +26,7 @@ target_link_libraries(ctrl_node
   gps_driver
   gps_client
   flow_notifier
+  debug_manager
   gps
   ${Glog_LIBRARIES}
 #  xbeep.a

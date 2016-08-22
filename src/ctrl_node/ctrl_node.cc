@@ -10,7 +10,7 @@
 #include <csignal>
 #include <glog/logging.h>
 #include "flow_notifier/flow_notifier.h"
-
+#include "debug_manager/debug_manager.h"
 using namespace std;
 
 #ifndef IT
@@ -51,6 +51,8 @@ int g_epsg;
 /// Mutex used to send one packet at a time
 pthread_mutex_t g_sendMutex;
 
+
+DebugManager *g_debugManager;
 /// Function to print Help if need be
 void print_help(const string Application)
 {
@@ -58,6 +60,16 @@ void print_help(const string Application)
   exit(0);
 }
 
+ofstream *g_dumpSent;
+ofstream *g_dumpRcv;
+
+
+int g_nPacketsSent;
+std::map<uint8_t, int> g_nPacketsRcv;
+std::map<uint8_t, xbee_app_data::EndNodeDebug> g_lastDebugRcv;
+
+
+void xbeeSend(size_t buflen);
 /// let's assume that desc is either 'SINK' or an IP address
 uint8_t getNodeId(std::string desc)
 {
@@ -93,7 +105,6 @@ sendRoutingDataTimerCB(void *arg)
     if( g_abort )
         return;
     /// lock the mutex first
-    pthread_mutex_lock(&g_sendMutex);
     using namespace xbee_app_data;
 
     /// make payload
@@ -227,179 +238,174 @@ sendRoutingDataTimerCB(void *arg)
         txInfo.reqAck = true;
         txInfo.readCCA = false;
 
-#ifndef NO_XBEE_TEST
-        int retval = g_xbee->send(XBEE_BROADCAST_ADDR, txInfo, g_outBuf, buflen);
-        if( retval == XbeeInterface::NO_ACK )
-        {
-	  LOG(INFO) << "send failed NOACK";
-        }
-        else if( retval == XbeeInterface::TX_MAC_BUSY )
-        {
-	  LOG(INFO) << "send failed MACBUSY";
-        }
-        else
-        {
-	  LOG(INFO) << "send OK";
-        }
-#endif
+	xbeeSend(buflen);
     }
 
-    pthread_mutex_unlock(&g_sendMutex);
+
+}
+
+
+
+void xbeeSend(size_t buflen)
+{
+  using namespace xbee_app_data;
+  pthread_mutex_lock(&g_sendMutex);
+  XbeeInterface::TxInfo txInfo;
+  txInfo.reqAck = true;
+  txInfo.readCCA = false;
+  
+#ifndef NO_XBEE_TEST
+  int retval = g_xbee->send(XBEE_BROADCAST_ADDR, txInfo, g_outBuf, buflen);
+  if( retval == XbeeInterface::NO_ACK )
+    {
+      LOG(INFO) << "send failed NOACK";
+    }
+  else if( retval == XbeeInterface::TX_MAC_BUSY )
+    {
+      LOG(INFO) << "send failed MACBUSY";
+    }
+  else
+    {
+      LOG(INFO) << "send OK";
+      g_nPacketsSent++;
+    }
+#endif
+  pthread_mutex_unlock(&g_sendMutex);
 }
 
 /// Function that sends the node info packet for planning Tables ///
 void
 sendPlanningDataTimerCB(void *arg)
 {
-    if( g_abort )
-        return;
-    /// lock the mutex first
-    pthread_mutex_lock(&g_sendMutex);
-    using namespace xbee_app_data;
-    TimestampedPLANNINGData planningData = g_planningDriver->data();
+  if( g_abort )
+    return;
+  /// lock the mutex first
+  
+  using namespace xbee_app_data;
+  TimestampedPLANNINGData planningData = g_planningDriver->data();
 
-    /// first, check if the routing data has changed by comparing the
-    /// timestamps
-    if( planningData.timestamp > g_lastPlanningDataSent.timestamp )
+  /// first, check if the routing data has changed by comparing the
+  /// timestamps
+  if( planningData.timestamp > g_lastPlanningDataSent.timestamp )
     {
-        /// it has changed ...
-        /// we need to create new xbee messages
-        IT(planningData.plan) it = planningData.plan.begin();
+      /// it has changed ...
+      /// we need to create new xbee messages
+      IT(planningData.plan) it = planningData.plan.begin();
 
-        g_planningXbeeMsgs.clear();
-        for(;;)
+      g_planningXbeeMsgs.clear();
+      for(;;)
         {
-            std::vector<uint8_t> dataVec;
-            dataVec.reserve(XBEE_MAX_PAYLOAD_LENGTH);
-            int dataIx = 0;
-            //// compose node info packet
-            Header hdr;
-            /// make header
-            hdr.type = XBEEDATA_PLANNING;
-            dataVec.resize(dataVec.size() + sizeof(Header) );
-            memcpy(&dataVec[dataVec.size() - sizeof(Header)],
-                    &hdr, sizeof(Header));
-            /// --- now the planning header
-            Planning planHdr;
-            dataVec.resize(dataVec.size() + sizeof(Planning) );
-            memcpy(&dataVec[dataVec.size() - sizeof(Planning)],
-                    &planHdr, sizeof(Planning));
+	  std::vector<uint8_t> dataVec;
+	  dataVec.reserve(XBEE_MAX_PAYLOAD_LENGTH);
+	  int dataIx = 0;
+	  //// compose node info packet
+	  Header hdr;
+	  /// make header
+	  hdr.type = XBEEDATA_PLANNING;
+	  dataVec.resize(dataVec.size() + sizeof(Header) );
+	  memcpy(&dataVec[dataVec.size() - sizeof(Header)],
+		 &hdr, sizeof(Header));
+	  /// --- now the planning header
+	  Planning planHdr;
+	  dataVec.resize(dataVec.size() + sizeof(Planning) );
+	  memcpy(&dataVec[dataVec.size() - sizeof(Planning)],
+		 &planHdr, sizeof(Planning));
 
-            /// let's forget for a moment about the fragment numbers
-            int nbytes=0;
+	  /// let's forget for a moment about the fragment numbers
+	  int nbytes=0;
 
-            while(it != planningData.plan.end() )
+	  while(it != planningData.plan.end() )
             {
-                std::string nodedesc = it->first;
-		LOG(INFO) << "pushing table of " << nodedesc;
-                PlanningTable table = it->second;
-		LOG(INFO) << table.size() << " entries ";
-                /// can we fit all entries here ?
-                if( dataVec.size() + sizeof(xbee_app_data::RoutingTableHdr)
-                        + sizeof(xbee_app_data::PlanningEntry)*table.size()
-                        <= XBEE_MAX_PAYLOAD_LENGTH )
+	      std::string nodedesc = it->first;
+	      LOG(INFO) << "pushing table of " << nodedesc;
+	      PlanningTable table = it->second;
+	      LOG(INFO) << table.size() << " entries ";
+	      /// can we fit all entries here ?
+	      if( dataVec.size() + sizeof(xbee_app_data::RoutingTableHdr)
+		  + sizeof(xbee_app_data::PlanningEntry)*table.size()
+		  <= XBEE_MAX_PAYLOAD_LENGTH )
                 {
-                    PlanningTableHdr plHdr;
-                    /// we need somehow to map node identifiers to numeric ids (0-255)
-                    NodeId nid = getNodeId(nodedesc);
-                    plHdr.nodeId = nid;
-                    plHdr.nEntries = static_cast<uint8_t>(table.size());
-                    dataVec.resize(dataVec.size() + sizeof(PlanningTableHdr) );
-                    memcpy(&dataVec[dataVec.size() - sizeof(PlanningTableHdr)],
-                            &plHdr, sizeof(PlanningTableHdr));
+		  PlanningTableHdr plHdr;
+		  /// we need somehow to map node identifiers to numeric ids (0-255)
+		  NodeId nid = getNodeId(nodedesc);
+		  plHdr.nodeId = nid;
+		  plHdr.nEntries = static_cast<uint8_t>(table.size());
+		  dataVec.resize(dataVec.size() + sizeof(PlanningTableHdr) );
+		  memcpy(&dataVec[dataVec.size() - sizeof(PlanningTableHdr)],
+			 &plHdr, sizeof(PlanningTableHdr));
 
-                    for(int j=0; j<table.size(); j++)
+		  for(int j=0; j<table.size(); j++)
                     {
-                        PlanningEntry plEntry;
-                        plEntry.latitude    = table[j].latitude;
-                        plEntry.longitude   = table[j].longitude;
-                        plEntry.altitude    = table[j].altitude;
-                        plEntry.action      = table[j].action;
-                        plEntry.option      = table[j].option;
-                        plEntry.timestamp   = table[j].timestamp;
-                        dataVec.resize(dataVec.size() + sizeof(PlanningEntry) );
-                        memcpy(&dataVec[dataVec.size() - sizeof(PlanningEntry)],
-                                &plEntry, sizeof(PlanningEntry));
+		      PlanningEntry plEntry;
+		      plEntry.latitude    = table[j].latitude;
+		      plEntry.longitude   = table[j].longitude;
+		      plEntry.altitude    = table[j].altitude;
+		      plEntry.action      = table[j].action;
+		      plEntry.option      = table[j].option;
+		      plEntry.timestamp   = table[j].timestamp;
+		      dataVec.resize(dataVec.size() + sizeof(PlanningEntry) );
+		      memcpy(&dataVec[dataVec.size() - sizeof(PlanningEntry)],
+			     &plEntry, sizeof(PlanningEntry));
                     }
-                    LOG(INFO) << "byte count " << dataVec.size();
+		  LOG(INFO) << "byte count " << dataVec.size();
                 }
-                else
+	      else
                 {
-                    ///
-                    break;
+		  ///
+		  break;
                 }
-                it++;
+	      it++;
             }
-            /// push the message
-            g_planningXbeeMsgs.push_back(dataVec);
-            if( it == planningData.plan.end() )
+	  /// push the message
+	  g_planningXbeeMsgs.push_back(dataVec);
+	  if( it == planningData.plan.end() )
             {
-                /// we are done
-                break;
+	      /// we are done
+	      break;
             }
         }
-        /// now we care about the fragments
-	LOG(INFO) << "generated msgs " <<  g_planningXbeeMsgs.size();
-        g_lastXbeePlanId++;
-        uint8_t fgn = 0;
-        FOREACH(jt, g_planningXbeeMsgs)
+      /// now we care about the fragments
+      LOG(INFO) << "generated msgs " <<  g_planningXbeeMsgs.size();
+      g_lastXbeePlanId++;
+      uint8_t fgn = 0;
+      FOREACH(jt, g_planningXbeeMsgs)
         {
-            assert((*jt).size() >= sizeof(Header) + sizeof(Planning));
-            if( (*jt).size() < sizeof(Header) + sizeof(Planning) )
+	  assert((*jt).size() >= sizeof(Header) + sizeof(Planning));
+	  if( (*jt).size() < sizeof(Header) + sizeof(Planning) )
             {
-                fprintf(stderr, "something wrong here (%lu < %lu)\n",
-                        (*jt).size(), sizeof(Header) + sizeof(Planning));
-                exit(1);
+	      fprintf(stderr, "something wrong here (%lu < %lu)\n",
+		      (*jt).size(), sizeof(Header) + sizeof(Planning));
+	      exit(1);
             }
-            Planning *planHdr = (Planning *)&(*jt)[sizeof(Header)];
-            planHdr->tabId = g_lastXbeePlanId;
-            planHdr->fragNb = fgn++;
-            planHdr->nbOfFrag = static_cast<uint8_t>(g_planningXbeeMsgs.size());
-            planHdr->nbBytes = (*jt).size() - sizeof(Header) - sizeof(Planning);
+	  Planning *planHdr = (Planning *)&(*jt)[sizeof(Header)];
+	  planHdr->tabId = g_lastXbeePlanId;
+	  planHdr->fragNb = fgn++;
+	  planHdr->nbOfFrag = static_cast<uint8_t>(g_planningXbeeMsgs.size());
+	  planHdr->nbBytes = (*jt).size() - sizeof(Header) - sizeof(Planning);
         }
-        /// we're done
-        g_lastPlanningDataSent = planningData;
+      /// we're done
+      g_lastPlanningDataSent = planningData;
     }
-    else
+  else
     {
-        /// we don't need to encode again the xbee payload since the
-        /// routing hasn't changed
+      /// we don't need to encode again the xbee payload since the
+      /// routing hasn't changed
       LOG(INFO) << "Planning unchanged ...";
     }
 
-    if( g_planningXbeeMsgs.size() )
-      LOG(INFO) << "sending " << g_planningXbeeMsgs.size() << " msgs";
-    for(int i=0; i< g_planningXbeeMsgs.size(); i++)
-      {
-	LOG(INFO) << "sending msgs " << (i+1)
-		  << " out of " << (int) g_planningXbeeMsgs.size()
-		  << " with size " << g_planningXbeeMsgs[i].size();
-	LOG(INFO) << +(g_planningXbeeMsgs[i][0]);
+  if( g_planningXbeeMsgs.size() )
+    LOG(INFO) << "sending " << g_planningXbeeMsgs.size() << " msgs";
+  for(int i=0; i< g_planningXbeeMsgs.size(); i++)
+    {
+      LOG(INFO) << "sending msgs " << (i+1)
+		<< " out of " << (int) g_planningXbeeMsgs.size()
+		<< " with size " << g_planningXbeeMsgs[i].size();
+      LOG(INFO) << +(g_planningXbeeMsgs[i][0]);
 
-        memcpy(g_outBuf, &g_planningXbeeMsgs[i][0], g_planningXbeeMsgs[i].size());
-        size_t buflen = g_planningXbeeMsgs[i].size();
-        XbeeInterface::TxInfo txInfo;
-        txInfo.reqAck = true;
-        txInfo.readCCA = false;
-
-#ifndef NO_XBEE_TEST
-        int retval = g_xbee->send(XBEE_BROADCAST_ADDR, txInfo, g_outBuf, buflen);
-        if( retval == XbeeInterface::NO_ACK )
-	  {
-	    LOG(INFO) << "send failed NOACK";
-	  }
-        else if( retval == XbeeInterface::TX_MAC_BUSY )
-	  {
-	    LOG(INFO) << "send failed MACBUSY";
-	  }
-        else
-	  {
-	    LOG(INFO) << "send OK";
-	  }
-#endif
-      }
-
-    pthread_mutex_unlock(&g_sendMutex);  /// Unlock the mutex
+      memcpy(g_outBuf, &g_planningXbeeMsgs[i][0], g_planningXbeeMsgs[i].size());
+      size_t buflen = g_planningXbeeMsgs[i].size();
+      xbeeSend(buflen);
+    }
 }
 
 void
@@ -454,6 +460,11 @@ receiveData(uint16_t addr, void *data, char rssi, timespec timestamp, size_t len
         memcpy(&header, data, sizeof(Header));
         LOG(INFO) << "Header: " << header;
 
+	if( g_nPacketsRcv.find( header.src ) == g_nPacketsRcv.end())
+	  g_nPacketsRcv[header.src]=0;
+	g_nPacketsRcv[header.src]++;
+	   
+
         if (header.type == XBEEDATA_ENDNODEINFO )               /// Check the type of Header
         {
             /// Check the size of the packet
@@ -467,10 +478,10 @@ receiveData(uint16_t addr, void *data, char rssi, timespec timestamp, size_t len
                 LOG(INFO) << "EndNodeInfo from " << +header.src
 			  << ": " << eInfo;
                 LOG(INFO) << "GPS Data Received from " << +header.src
-			  << " lat: "
-			  << eInfo.latitude
 			  << " lon: "
 			  << eInfo.longitude
+			  << " lat: "
+			  << eInfo.latitude
 			  << " alt: "
 			  << eInfo.altitude;
 		g_gpsDriver->notifyPos(header.src, eInfo.longitude,
@@ -497,7 +508,13 @@ receiveData(uint16_t addr, void *data, char rssi, timespec timestamp, size_t len
                        (unsigned char *)data + sizeof(Header),
                        sizeof(EndNodeDebug));
                 LOG(INFO) << "EndNodeDebug from " << +header.src
-			  << ": " << eDebug;			       
+			  << ": " << eDebug;
+		g_debugManager->checkpoint(header.src, 
+					   g_nPacketsSent,
+					   g_nPacketsRcv[header.src]-1,
+					   eDebug);
+		if( g_debugManager)
+		  g_debugManager->publishLCM(header.src, eDebug);
             }
             else
             {
@@ -554,6 +571,9 @@ int main(int argc, char * argv[])
     g_abort = false;
     g_lastRoutingDataSent.timestamp = 0;
     g_lastPlanningDataSent.timestamp = 0;
+    g_dumpSent = NULL;
+    g_dumpRcv = NULL;
+    g_nPacketsSent=0;
 
 
 
@@ -571,6 +591,7 @@ int main(int argc, char * argv[])
     const string  xbeeMode = cl.follow("xbee5", "--mode");
     const string  addrBook  = cl.follow("none", "--abook");
     const string  logDir  = cl.follow("/tmp/", "--logdir");
+    const string  dumpFile  = cl.follow("none", "--dump-file-prefix");
     g_epsg  = cl.follow(32632, "--epsg");
 
     /// Initialize Log
@@ -578,6 +599,21 @@ int main(int argc, char * argv[])
     FLAGS_logbufsecs = 0;
     FLAGS_log_dir = logDir;
     LOG(INFO) << "Logging initialized";
+
+    if( dumpFile != "none" )
+      {
+	stringstream ss;
+	ss << logDir << "/" << dumpFile << "_out.dump";
+	string dump_fn = ss.str();
+	g_dumpSent = new std::ofstream(dump_fn.c_str(), ios::out | ios::binary);
+	LOG(INFO) << "Initialized dump sent in " << dump_fn;
+
+	ss.str("");
+	ss << logDir << "/" << dumpFile << "_in.dump";
+	dump_fn = ss.str();
+	g_dumpRcv = new std::ofstream(dump_fn.c_str(), ios::out | ios::binary);
+	LOG(INFO) << "Initialized dump rcv in " << dump_fn;
+      }
 
     
     /// Xbee PARAMETERS
@@ -596,6 +632,16 @@ int main(int argc, char * argv[])
         exit(-1);
     }
 
+    g_routingDriver = NULL;
+    g_sendRoutingDataTimer = NULL;
+    g_planningDriver = NULL;
+    g_sendPlanningDataTimer = NULL;
+    g_flowNotifier = NULL;
+    g_gpsDriver = NULL;
+    g_debugManager = NULL;
+
+
+    
     LOG(INFO) << "Creating xbee interface";
 
 #ifndef NO_XBEE_TEST
@@ -621,7 +667,10 @@ int main(int argc, char * argv[])
     g_sendPlanningDataTimer = new Timer(TIMER_SECONDS, sendPlanningDataTimerCB, NULL);
     g_sendPlanningDataTimer->startPeriodic(1);
     g_flowNotifier = new FlowNotifier("udpm://239.255.76.67:7667?ttl=0", "iflowip", false);
-    g_gpsDriver = new GPSDriver("udpm://239.255.76.67:7667?ttl=0", "POSEGPS", false, false);
+    g_gpsDriver = new GPSDriver(nodeId, "udpm://239.255.76.67:7667?ttl=0", "RCVPOSEGPS", false, false);
+
+    g_debugManager = new DebugManager("udpm://239.255.76.67:7667?ttl=0",
+				      "XBEEDEBUG", false);
     LOG(INFO) << "drivers up";
     
     if( addrBook != "none" )
@@ -635,6 +684,18 @@ int main(int argc, char * argv[])
     {
         sleep(1);
     }
+
+    if( g_dumpSent )
+      {
+	g_dumpSent->close();
+	delete g_dumpSent;
+      }
+    if( g_dumpRcv )
+      {
+	g_dumpRcv->close();
+	delete g_dumpRcv;
+      }
+    
 
     return 0;
 }

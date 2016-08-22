@@ -132,4 +132,7 @@ std::ostream &operator<<(std::ostream &os, const xbee_app_data::Routing &);
 std::ostream &operator<<(std::ostream &os, const xbee_app_data::Planning &);
 std::ostream &operator<<(std::ostream &os, const xbee_app_data::Header &);
 
+unsigned long
+checksum(unsigned char *str, size_t len);
+
 #endif

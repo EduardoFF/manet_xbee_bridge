@@ -121,6 +121,7 @@ public:
         TX_CCA3,
         TX_CCA4,
         TX_MAC_BUSY, 	//! Tx failed due to CSMA MAC failure (channel busy)
+	TX_DEVICE_ERROR,
     } ;
 
     typedef struct {

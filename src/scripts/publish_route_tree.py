@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 """
-   publish_route2_tree - send (bidir) routing tree  from cmd line
+   waypoint_scenario_bm - reproduces scenario from bonnmotion traces
    
-    Copyright (C) 2016 Eduardo Feo
+    Copyright (C) 2014 Eduardo Feo
      
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,11 +19,12 @@
 """
 
 import lcm
-from rnp import route2_entry_t
-from rnp import route2_table_t
-from rnp import route2_tree_t
+from rnp import route_tree_t
+from rnp import route_table_t
+from rnp import route_entry_t
 import sys
 import time
+from xml.dom import minidom
 from optparse import OptionParser
 
 # the routing tree
@@ -39,7 +40,7 @@ def readFile(fname):
             sys.exit(1)
         node = s[0]
         succ = [s[n:n+2] for n in range(1,len(s),2)]
-        succl = [(i,j,1) for [i,j] in succ]
+        succl = [(i,int(j)) for [i,j] in succ]
         rtree.append((node,succl))
 
 
@@ -55,57 +56,46 @@ def readFromCmdline(args):
         while m:
             dest=args[i]
             i+=1
-            nh=args[i]
-            i+=1            
             w = int(args[i])
             i+=1
-            rt.append( (dest,nh, w) )
+            rt.append( (dest,w) )
             m-=1
         rtree.append((node, rt))
 
 parser = OptionParser()
-ttl=1
 parser.add_option("-f", "--file", dest="filename",
                   help="read data from  FILE", 
                   metavar="FILE")
-
-parser.add_option("-c", "--channel", dest="channel",
-                  help="LCM channel",
-                  default="RNP",
-                  metavar="CHANNEL")
-
-parser.add_option("-l", "--local",
-                      action="store_true",
-                      help="publish local")
-
+#parser.add_option("-q", "--quiet",
+                  #action="store_false", dest="verbose", default=True,
+                                    #help="don't print status messages to stdout")
 
 (options, args) = parser.parse_args()
+
+#print options
+#print args
 
 if options.filename:
     readFile(options.filename)
 
-if options.local:
-    ttl=0
-
-
 if len(args):
     readFromCmdline(args)
 
-lcm = lcm.LCM("udpm://239.255.76.67:7667?ttl=%d"%(ttl))
-msg = route2_tree_t()
+lcm = lcm.LCM("udpm://239.255.76.67:7667?ttl=1")
+msg = route_tree_t()
 msg.timestamp = int(time.time() * 1000000)
+#msg.timestamp = 0
 
 print rtree
 msg.n = len(rtree)
 rtables=list()
 for (node, rtable) in rtree:
-    rt = route2_table_t()
+    rt = route_table_t()
     rt.node = node
     rt.n = len(rtable)
     entries=list()
-    for (dest,nh,w) in rtable:
-        re = route2_entry_t()
-        re.dest = dest
+    for (nh,w) in rtable:
+        re = route_entry_t()
         re.node = nh
         re.weight = w
         entries.append(re)
@@ -114,6 +104,5 @@ for (node, rtable) in rtree:
 
 msg.rtable = rtables
 #print msg
-print "publishing msg to ",options.channel
-lcm.publish(options.channel, msg.encode())
+lcm.publish("RNP", msg.encode())
 

@@ -215,7 +215,7 @@ XbeeInterface::send(uint16_t addr, TxInfo &txPar, const void *data, size_t size)
     {
       con = it->second;
     }
-
+    bool xbee_error = false;
   try {
     unsigned char err; 
     bool restore_settings = false;
@@ -223,6 +223,7 @@ XbeeInterface::send(uint16_t addr, TxInfo &txPar, const void *data, size_t size)
     con->getSettings(&prev_settings);
     con->getSettings(&settings);
 
+    
     if( txPar.reqAck )
       {
 	if( settings.disableAck)
@@ -254,21 +255,26 @@ XbeeInterface::send(uint16_t addr, TxInfo &txPar, const void *data, size_t size)
     }
     std::cout << "\n";
 #endif
+
     try
       {  
 	if( err = con->Tx((const unsigned char *)data, (int) size) )
 	  {
 	    debug("xbee ret %d", err);
 	    log_info("xbee tx returned %d", err);
+	    xbee_error = (err != XBEE_ENONE );
+	    printf("xbee tx returned %d", err);
 	  }
       }
     catch (xbee_err ret)
       {
 	log_err("xbee exception %d", ret);
+	xbee_error = true;
       }
     catch (...)
       {
 	log_err("xbee exception ");
+	xbee_error = true;
       }
     
 
@@ -276,16 +282,21 @@ XbeeInterface::send(uint16_t addr, TxInfo &txPar, const void *data, size_t size)
       con->setSettings(&prev_settings);
   } catch (xbee_err ret) {
     log_err("xbee exception %d", ret);
+    xbee_error = true;
   } catch ( xbee_etx etx )
     {
+      xbee_error = true;
       log_err("xbee etx exception err %d retval %d",
 	      etx.ret, etx.retVal);
     }
   catch (...)
     {
+      xbee_error = true;
       printf("error!\n");
     }
 
+  if( xbee_error )
+    return TX_DEVICE_ERROR;
 
   if( txPar.readCCA )
     {

@@ -17,12 +17,14 @@ std::ostream
 }
   
 
-GPSDriver::GPSDriver(const char * url,
+GPSDriver::GPSDriver(int id,
+		     const char * url,
 		     const string &channel,
 		     bool handle,
 		     bool with_gpsd):
     m_uselcm(true)
 {
+  m_id = id;
     /// Create a new LCM instance
     m_lcm = lcm_create(url);
     /// Set LCM URL
@@ -87,6 +89,11 @@ GPSDriver::handleMessage(const lcm::ReceiveBuffer* rbuf,
     LOG(INFO) << "handleMsg " << tt
 	      << " @ chan " << chan
 	      << " pos_gps: " << *msg;
+    if( m_id != msg->robotid )
+      {
+	LOG(INFO) << "Not my GPS pose";
+	return;
+      }
     pthread_mutex_lock(&m_mutex);
     m_latestData.lat = msg->latitude;
     m_latestData.lon = msg->longitude;
