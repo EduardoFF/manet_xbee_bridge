@@ -6,8 +6,5 @@ DO NOT MODIFY BY HAND!!!!
 from .route2_tree_t import route2_tree_t
 from .route2_table_t import route2_table_t
 from .route2_entry_t import route2_entry_t
-from .route_tree_t import route_tree_t
-from .route_table_t import route_table_t
-from .route_entry_t import route_entry_t
 from .flow_list_t import flow_list_t
 from .flow_entry_t import flow_entry_t
