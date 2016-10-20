@@ -25,7 +25,7 @@ from rnp import route2_tree_t
 import sys
 import time
 from optparse import OptionParser
-
+import hashlib
 
 paths=[]
 def readFile(fname):
@@ -131,4 +131,5 @@ msg.rtable = rtables
 if not only_print:
     print "publishing msg to ",options.channel
     lcm.publish(options.channel, msg.encode())
+print hashlib.md5(msg.encode()).hexdigest()
 

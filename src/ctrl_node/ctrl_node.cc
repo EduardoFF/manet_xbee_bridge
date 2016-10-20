@@ -68,6 +68,10 @@ int g_nPacketsSent;
 std::map<uint8_t, int> g_nPacketsRcv;
 std::map<uint8_t, xbee_app_data::EndNodeDebug> g_lastDebugRcv;
 
+std::map<uint8_t, uint16_t>  g_lastSeqnRcv;
+
+uint16_t g_seqn;
+uint8_t g_nodeId;
 
 void xbeeSend(size_t buflen);
 /// let's assume that desc is either 'SINK' or an IP address
@@ -97,6 +101,17 @@ uint8_t getNodeId(std::string desc)
         return value[3];
     }
 }
+
+xbee_app_data::Header
+makeHeader(const char packet_type)
+{
+  xbee_app_data::Header hdr;
+  hdr.type = packet_type;
+  hdr.src = g_nodeId;
+  hdr.seqn = ++g_seqn;
+  return hdr;
+}
+
 
 /// Function that sends the node info packet for routing Tables ///
 void
@@ -128,9 +143,9 @@ sendRoutingDataTimerCB(void *arg)
             dataVec.reserve(XBEE_MAX_PAYLOAD_LENGTH);
             int dataIx = 0;
             //// compose node info packet
-            Header hdr;
+            Header hdr = makeHeader(XBEEDATA_ROUTING);
             /// make header
-            hdr.type = XBEEDATA_ROUTING;
+	    //            hdr.type = XBEEDATA_ROUTING;
             dataVec.resize(dataVec.size() + sizeof(Header) );
             memcpy(&dataVec[dataVec.size() - sizeof(Header)],
                     &hdr, sizeof(Header));
@@ -299,9 +314,9 @@ sendPlanningDataTimerCB(void *arg)
 	  dataVec.reserve(XBEE_MAX_PAYLOAD_LENGTH);
 	  int dataIx = 0;
 	  //// compose node info packet
-	  Header hdr;
+	  Header hdr = makeHeader(XBEEDATA_PLANNING);
 	  /// make header
-	  hdr.type = XBEEDATA_PLANNING;
+	  //	  hdr.type = XBEEDATA_PLANNING;
 	  dataVec.resize(dataVec.size() + sizeof(Header) );
 	  memcpy(&dataVec[dataVec.size() - sizeof(Header)],
 		 &hdr, sizeof(Header));
@@ -463,6 +478,40 @@ receiveData(uint16_t addr, void *data, char rssi, timespec timestamp, size_t len
 	if( g_nPacketsRcv.find( header.src ) == g_nPacketsRcv.end())
 	  g_nPacketsRcv[header.src]=0;
 	g_nPacketsRcv[header.src]++;
+
+	/// check sequence number consistency
+	if( g_lastSeqnRcv.find( header.src) == g_lastSeqnRcv.end())
+	  {
+	    g_lastSeqnRcv[header.src] = header.seqn;
+	    LOG(INFO) << "Got first packet from " << +header.src;
+	  }
+	else
+	  {
+	    if( header.seqn > g_lastSeqnRcv[header.src] + 1)
+	      {
+		int missing_n = +(header.seqn - g_lastSeqnRcv[header.src]);
+		LOG(WARNING) << "MISSINGNPACKETSEQN NODE " << +header.src
+			     << " " << missing_n;
+		if( missing_n < 10 )
+		  {
+		    for(uint16_t i=g_lastSeqnRcv[header.src]+1;i<header.seqn; i++)
+		      {
+			LOG(WARNING) << "MISSINGPACKETSEQN NODE "
+				     << +header.src
+				     << " " << +(i);
+		      }
+		  }		
+	      }
+	    else if( header.seqn <= g_lastSeqnRcv[header.src])
+	      {
+		LOG(WARNING) << "ROLLEDSEQN NODE " << +header.src
+			     << " " << +(header.seqn)
+			     << " < " << +(g_lastSeqnRcv[header.src]);
+	      }
+	    g_lastSeqnRcv[header.src] = header.seqn;
+	    
+	  }
+	
 	   
 
         if (header.type == XBEEDATA_ENDNODEINFO )               /// Check the type of Header
@@ -574,6 +623,7 @@ int main(int argc, char * argv[])
     g_dumpSent = NULL;
     g_dumpRcv = NULL;
     g_nPacketsSent=0;
+    g_seqn = 0;
 
 
 
@@ -593,6 +643,8 @@ int main(int argc, char * argv[])
     const string  logDir  = cl.follow("/tmp/", "--logdir");
     const string  dumpFile  = cl.follow("none", "--dump-file-prefix");
     g_epsg  = cl.follow(32632, "--epsg");
+
+    g_nodeId = nodeId;
 
     /// Initialize Log
     google::InitGoogleLogging(argv[0]);

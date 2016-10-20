@@ -129,8 +129,8 @@ ROUTINGDriver::handleMessage(const lcm::ReceiveBuffer* rbuf,
     printf("  Received message on channel \"%s\":\n", chan.c_str());
     printf("  timestamp   = %lld\n", (long long)msg->timestamp);
 
-    //    routingData.timestamp = msg->timestamp;
-    routingData.timestamp = tt;
+    routingData.timestamp = msg->timestamp;
+    //routingData.timestamp = tt;
     for(int i = 0; i < msg->n; i++)
     {
         RoutingTable table;

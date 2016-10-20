@@ -78,7 +78,6 @@ parser.add_option("-l", "--local",
                       action="store_true",
                       help="publish local")
 
-
 (options, args) = parser.parse_args()
 
 if options.filename:

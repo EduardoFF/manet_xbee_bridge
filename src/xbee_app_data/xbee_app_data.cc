@@ -27,14 +27,14 @@ ostream &operator<<(ostream &os, const EndNodeDebug &info)
 ostream &operator<<(ostream &os, const Header &hdr)
 {
   os << " src " << (int) +hdr.src;
-  os << "type: ";
+  os << " seqn " << (int) +hdr.seqn;
+  os << " type: ";
   if( hdr.type == XBEEDATA_ROUTING )
     os << "ROUTING";
   else if( hdr.type == XBEEDATA_ENDNODEINFO)
     os << "ENDNODEINFO";
   else if( hdr.type == XBEEDATA_ENDNODEDEBUG)
     os << "ENDNODEDEBUG";
-  
   else if( hdr.type == XBEEDATA_FLOWINFO )
     os << "FLOWINFO";
   else if( hdr.type == XBEEDATA_PLANNING )

@@ -22,6 +22,7 @@ XbeeInterface *g_xbee;
 #endif
 
 uint8_t g_nodeId;
+uint16_t g_seqn;
 
 PLANNINGDriver *g_planningDriver;
 ROUTINGDriver *g_routingDriver;
@@ -109,6 +110,16 @@ void killTimer( Timer *timer)
 }
 
 
+xbee_app_data::Header
+makeHeader(const char packet_type)
+{
+  xbee_app_data::Header hdr;
+  hdr.type = packet_type;
+  hdr.src = g_nodeId;
+  hdr.seqn = ++g_seqn;
+  return hdr;
+}
+
 bool
 xbeeSend(size_t buflen)
 {
@@ -164,19 +175,6 @@ flowInfoTimerCB(void *arg)
   DLOG(INFO) << "flowInfoTimer triggered";
 
 
-  /// lock the mutex first
-   using namespace xbee_app_data;
-
-  //// compose node info packet
-  Header hdr;
-
-  /// make header
-  hdr.src  = g_nodeId;
-  hdr.type = XBEEDATA_FLOWINFO;
-  memcpy(g_outBuf, &hdr, sizeof(Header));
-
-  /// make payload
-  FlowInfoEntry fInfo;
   FlowList fList = g_flowNotifier->getFlows(2000);
   if( !fList.size()  )
     {
@@ -184,6 +182,21 @@ flowInfoTimerCB(void *arg)
       return;
     }
   LOG(INFO) << "Got some " << fList.size() << " flows to notify";
+
+  /// lock the mutex first
+  using namespace xbee_app_data;
+
+  //// compose node info packet
+  Header hdr = makeHeader(XBEEDATA_FLOWINFO);
+
+  /// make header
+  //  hdr.src  = g_nodeId;
+  //hdr.type = XBEEDATA_FLOWINFO;
+  memcpy(g_outBuf, &hdr, sizeof(Header));
+
+  /// make payload
+  FlowInfoEntry fInfo;
+
 
   FlowInfoHdr *fInfoHdr = (FlowInfoHdr *) (g_outBuf+sizeof(Header));
   fInfoHdr->nEntries=0;
@@ -198,7 +211,7 @@ flowInfoTimerCB(void *arg)
 	continue;
       if( g_flowNotifier->getIdFromAddressBook(it->dst_addr) != g_nodeId )
 	{
-	  LOG(INFO) << "Rejected flow from " << (int) fInfo.nodeId
+	  LOG(INFO) << "Rejected flow from " << +(fInfo.nodeId)
 		    << " to " << it->dst_addr.toString();
 	continue;
 	}
@@ -207,11 +220,13 @@ flowInfoTimerCB(void *arg)
       ptr += sizeof(FlowInfoEntry);
       buflen += sizeof(FlowInfoEntry);
       fInfoHdr->nEntries+=1;
-      LOG(INFO) << "Flow " << fInfo.nodeId << " " <<  fInfo.dataRate;
+      LOG(INFO) << "Flow " << +(fInfo.nodeId) << " " <<  fInfo.dataRate;
     }
   if( !fInfoHdr->nEntries )
     {
       LOG(INFO) << "No active flows to notify";
+      /// in this particular case, we revert the seqn
+      g_seqn--;
       return;
     }
   else
@@ -220,6 +235,7 @@ flowInfoTimerCB(void *arg)
 		<< (int) fInfoHdr->nEntries << " flows";
     }
   xbeeSend(buflen);
+  LOG(INFO) << "SENT " << hdr;
 
   
   //TimestampedGPSData gpsData = g_gpsDriver->data();
@@ -237,11 +253,11 @@ endNodeInfoTimerCB(void *arg)
     using namespace xbee_app_data;
 
     //// compose node info packet
-    Header hdr;
+    Header hdr = makeHeader(XBEEDATA_ENDNODEINFO);
 
     /// make header
-    hdr.src = g_nodeId;
-    hdr.type = XBEEDATA_ENDNODEINFO;
+    //    hdr.src = g_nodeId;
+    //hdr.type = XBEEDATA_ENDNODEINFO;
     memcpy(g_outBuf, &hdr, sizeof(Header));
 
     /// make payload
@@ -250,6 +266,8 @@ endNodeInfoTimerCB(void *arg)
     eInfo.latitude  = gpsData.lat;
     eInfo.longitude = gpsData.lon;
     eInfo.altitude  = gpsData.alt;
+
+
     LOG(INFO) << "Sending EndNodeInfo "
 	      << " " << eInfo.latitude
 	      << " " << eInfo.longitude
@@ -264,6 +282,7 @@ endNodeInfoTimerCB(void *arg)
     txInfo.readCCA = false;
 
     xbeeSend(buflen);
+    LOG(INFO) << "SENT " << hdr;
 
 }
 
@@ -279,11 +298,11 @@ endNodeDebugTimerCB(void *arg)
     using namespace xbee_app_data;
 
     //// compose node info packet
-    Header hdr;
+    Header hdr = makeHeader(XBEEDATA_ENDNODEDEBUG);
 
     /// make header
-    hdr.src = g_nodeId;
-    hdr.type = XBEEDATA_ENDNODEDEBUG;
+    //    hdr.src = g_nodeId;
+    //hdr.type = XBEEDATA_ENDNODEDEBUG;
     memcpy(g_outBuf, &hdr, sizeof(Header));
 
     /// make payload
@@ -293,6 +312,8 @@ endNodeDebugTimerCB(void *arg)
     eInfo.n_xbee_pkts_rcv = g_nPacketsRcv;
     eInfo.n_xbee_bytes_rcv = g_nBytesRcv;
     eInfo.timestamp = getTime();
+
+
     LOG(INFO) << "sending timestamp " << (long long) eInfo.timestamp;
     eInfo.last_flow_notify_time =
       (eInfo.timestamp - g_flowNotifier->lastNotificationTime())/1000;
@@ -309,6 +330,7 @@ endNodeDebugTimerCB(void *arg)
     txInfo.readCCA = false;
 
     xbeeSend(buflen);
+    LOG(INFO) << "SENT " << hdr;
 
 }
 
@@ -551,6 +573,7 @@ int main(int argc, char * argv[])
     g_nPacketsRcv = 0;
     g_nBytesSent = 0;
     g_nBytesRcv = 0;
+    g_seqn = 0;
 
     /// counting consecutive send errors
     g_errorCnt = 0;

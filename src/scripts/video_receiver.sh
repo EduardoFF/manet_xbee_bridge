@@ -1,5 +1,5 @@
 SRC1="udpsrc port=5021 ! application/x-rtp,encoding-name=JPEG,payload=26 ! rtpjpegdepay ! jpegdec"
-SRC1="filesrc location=/home/eduardo/p22.ogg ! oggdemux ! theoradec"
+#SRC1="filesrc location=/home/eduardo/p22.ogg ! oggdemux ! theoradec"
 gst-launch -e videomixer name=mix ! ffmpegcolorspace ! xvimagesink \
 	   ${SRC1}  ! textoverlay font-desc="Sans 24" text="CAM1" valign=top halign=left shaded-background=true ! \
 	   videobox border-alpha=0 top=-200 left=-50 ! mix. \

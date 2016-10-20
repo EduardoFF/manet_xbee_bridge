@@ -33,6 +33,7 @@ namespace xbee_app_data
     typedef struct Packet Packet;
     typedef uint8_t NodeId;
 
+    static const char     XBEEDATA_INVALID          = 0;
     static const char     XBEEDATA_ENDNODEINFO      = 1;
     static const char     XBEEDATA_ROUTING          = 2;
     static const char     XBEEDATA_PLANNING         = 3;
@@ -123,6 +124,7 @@ namespace xbee_app_data
     {
         char   type;
 	NodeId src;
+	uint16_t seqn;
     };
 
 };
